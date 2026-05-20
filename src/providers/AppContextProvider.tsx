@@ -8,37 +8,61 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Business, ContextSignals, Deal, EventItem, FilterPill } from '@/types';
-import { buildContextSignals, getStaticFallbackFilters } from '@/lib/context-engine';
+import { Business, ContextSignals, Deal, EventItem } from '@/types';
+import { PrimaryFilterPill, SecondaryFilterPill } from '@/types/filters';
+import { buildContextSignals, generatePrimaryPills, getSecondaryPills } from '@/lib/context-engine';
 import { WeatherData } from '@/types/context';
-import { DEFAULT_LOCATION } from '@/lib/constants';
+import { CityId, CITIES } from '@/data/city-meta';
+import { CuratedBusiness } from '@/types/curated';
+import { curatedToBusiness } from '@/lib/utils';
+import { mergePlaces } from '@/lib/dedup';
+import { useDynamicPlaces } from '@/hooks/useDynamicPlaces';
+
+import laData from '@/data/la.json';
+import sfData from '@/data/sf.json';
+import torontoData from '@/data/toronto.json';
+
+const CITY_DATA: Record<CityId, CuratedBusiness[]> = {
+  la: laData as CuratedBusiness[],
+  sf: sfData as CuratedBusiness[],
+  toronto: torontoData as CuratedBusiness[],
+};
 
 interface AppState {
+  selectedCity: CityId;
   signals: ContextSignals;
-  filters: FilterPill[];
-  activeFilterIds: string[];
+  primaryFilters: PrimaryFilterPill[];
+  activePrimaryId: string | null;
+  secondaryFilters: SecondaryFilterPill[];
+  activeSecondaryIds: string[];
   places: Business[];
   events: EventItem[];
   deals: Deal[];
   savedItemIds: string[];
   isLoading: boolean;
+  viewportCenter: { lat: number; lng: number } | null;
+  isDynamicLoading: boolean;
 }
 
 interface AppContextValue extends AppState {
-  toggleFilter: (id: string) => void;
+  setCity: (city: CityId) => void;
+  selectPrimary: (id: string) => void;
+  toggleSecondary: (id: string) => void;
+  clearFilters: () => void;
   saveItem: (id: string) => void;
   unsaveItem: (id: string) => void;
   isSaved: (id: string) => boolean;
   setPlaces: (places: Business[]) => void;
   setEvents: (events: EventItem[]) => void;
   setDeals: (deals: Deal[]) => void;
-  setFilters: (filters: FilterPill[]) => void;
   setIsLoading: (loading: boolean) => void;
+  setViewportCenter: (center: { lat: number; lng: number }) => void;
+  onViewportChange: (center: { lat: number; lng: number }) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const SAVED_ITEMS_KEY = 'rightnow-saved-items';
+const SAVED_ITEMS_KEY = 'rightnow-saved-v2';
 
 function loadSavedIds(): string[] {
   if (typeof window === 'undefined') return [];
@@ -51,19 +75,65 @@ function loadSavedIds(): string[] {
 }
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CityId>('la');
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [filters, setFilters] = useState<FilterPill[]>([]);
-  const [activeFilterIds, setActiveFilterIds] = useState<string[]>([]);
-  const [places, setPlaces] = useState<Business[]>([]);
+  const [activePrimaryId, setActivePrimaryId] = useState<string | null>(null);
+  const [activeSecondaryIds, setActiveSecondaryIds] = useState<string[]>([]);
+  const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
+    const curated = CITY_DATA['la'];
+    return curated.map((c) => curatedToBusiness(c));
+  });
   const [events, setEvents] = useState<EventItem[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [savedItemIds, setSavedItemIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
+
+  const location = CITIES[selectedCity].center;
 
   const signals = useMemo(
     () => buildContextSignals(location, weather),
     [location, weather]
+  );
+
+  const primaryFilters = useMemo(
+    () => generatePrimaryPills(signals),
+    [signals]
+  );
+
+  const activePrimaryPill = useMemo(
+    () => primaryFilters.find((p) => p.id === activePrimaryId) || null,
+    [primaryFilters, activePrimaryId]
+  );
+
+  const secondaryFilters = useMemo(
+    () => (activePrimaryPill ? getSecondaryPills(activePrimaryPill) : []),
+    [activePrimaryPill]
+  );
+
+  const searchKeyword = useMemo(() => {
+    if (!activePrimaryPill) return undefined;
+    let kw = activePrimaryPill.keyword;
+    if (activeSecondaryIds.length > 0) {
+      const secondaryKeywords = activeSecondaryIds
+        .map((id) => secondaryFilters.find((s) => s.id === id)?.keyword)
+        .filter(Boolean)
+        .join(' ');
+      kw = `${kw} ${secondaryKeywords}`;
+    }
+    return kw;
+  }, [activePrimaryPill, activeSecondaryIds, secondaryFilters]);
+
+  const { dynamicPlaces, isLoading: isDynamicLoading, onViewportChange } = useDynamicPlaces({
+    viewportCenter,
+    searchKeyword: searchKeyword || null,
+    selectedCity,
+    curatedCount: curatedPlaces.length,
+  });
+
+  const places = useMemo(
+    () => mergePlaces(curatedPlaces, dynamicPlaces),
+    [curatedPlaces, dynamicPlaces]
   );
 
   useEffect(() => {
@@ -76,19 +146,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, [savedItemIds]);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocation(DEFAULT_LOCATION);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setLocation(DEFAULT_LOCATION),
-      { enableHighAccuracy: false, timeout: 5000 }
-    );
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!location) return;
     fetch(`/api/weather?lat=${location.lat}&lng=${location.lng}`)
       .then((res) => res.json())
       .then((data) => {
@@ -97,37 +158,30 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       .catch(() => {});
   }, [location]);
 
-  useEffect(() => {
-    if (filters.length === 0) {
-      setFilters(getStaticFallbackFilters(signals));
-    }
-  }, [signals, filters.length]);
+  const setCity = useCallback((city: CityId) => {
+    setSelectedCity(city);
+    setActivePrimaryId(null);
+    setActiveSecondaryIds([]);
+    setWeather(null);
+    setViewportCenter(null);
+    const curated = CITY_DATA[city];
+    setCuratedPlaces(curated.map((c) => curatedToBusiness(c)));
+  }, []);
 
-  useEffect(() => {
-    if (!location) return;
-    const controller = new AbortController();
-    fetch('/api/context', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ signals: { ...signals, timestamp: signals.timestamp.toISOString() } }),
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.filters && data.filters.length > 0) {
-          setFilters(data.filters);
-        }
-      })
-      .catch(() => {});
+  const selectPrimary = useCallback((id: string) => {
+    setActivePrimaryId((prev) => (prev === id ? null : id));
+    setActiveSecondaryIds([]);
+  }, []);
 
-    return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location, signals.mealPeriod, signals.weather?.condition]);
-
-  const toggleFilter = useCallback((id: string) => {
-    setActiveFilterIds((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+  const toggleSecondary = useCallback((id: string) => {
+    setActiveSecondaryIds((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setActivePrimaryId(null);
+    setActiveSecondaryIds([]);
   }, []);
 
   const saveItem = useCallback((id: string) => {
@@ -143,24 +197,37 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     [savedItemIds]
   );
 
+  const setPlaces = useCallback((newPlaces: Business[]) => {
+    setCuratedPlaces(newPlaces);
+  }, []);
+
   const value: AppContextValue = {
+    selectedCity,
     signals,
-    filters,
-    activeFilterIds,
+    primaryFilters,
+    activePrimaryId,
+    secondaryFilters,
+    activeSecondaryIds,
     places,
     events,
     deals,
     savedItemIds,
     isLoading,
-    toggleFilter,
+    viewportCenter,
+    isDynamicLoading,
+    setCity,
+    selectPrimary,
+    toggleSecondary,
+    clearFilters,
     saveItem,
     unsaveItem,
     isSaved,
     setPlaces,
     setEvents,
     setDeals,
-    setFilters,
     setIsLoading,
+    setViewportCenter,
+    onViewportChange,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

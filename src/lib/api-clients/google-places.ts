@@ -52,6 +52,9 @@ function mapPlaceToBusiness(place: any, apiKey: string): Business {
   return {
     id: place.place_id,
     name: place.name,
+    neighborhood: '',
+    cuisine: primaryCategory,
+    category: primaryCategory,
     location: {
       lat: place.geometry.location.lat,
       lng: place.geometry.location.lng,
@@ -61,9 +64,14 @@ function mapPlaceToBusiness(place: any, apiKey: string): Business {
     priceLevel: place.price_level || 1,
     categories: types,
     primaryCategory,
-    address: place.vicinity || '',
+    address: place.vicinity || place.formatted_address || '',
     isOpenNow: place.opening_hours?.open_now ?? true,
     photoUrl,
+    hook: '',
+    buzzFactor: '',
+    michelinStatus: null,
+    city: '',
+    source: 'google',
     attributes,
   };
 }
@@ -74,6 +82,30 @@ function getPrimaryCategory(types: string[]): string {
     if (types.includes(t)) return t;
   }
   return types[0] || 'restaurant';
+}
+
+interface TextSearchParams {
+  query: string;
+  location: { lat: number; lng: number };
+  radius?: number;
+}
+
+export async function textSearchPlaces(params: TextSearchParams): Promise<Business[]> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey) throw new Error('Missing GOOGLE_PLACES_API_KEY');
+
+  const { query, location, radius = 8047 } = params;
+
+  const url = `${BASE_URL}/textsearch/json?query=${encodeURIComponent(query)}&location=${location.lat},${location.lng}&radius=${radius}&key=${apiKey}`;
+
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  if (!res.ok) throw new Error(`Text Search API error: ${res.status}`);
+
+  const data = await res.json();
+  if (!data.results) return [];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return data.results.slice(0, 40).map((place: any) => mapPlaceToBusiness(place, apiKey));
 }
 
 export function getCategoryEmoji(category: string): string {

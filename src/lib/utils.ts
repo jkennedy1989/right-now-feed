@@ -1,8 +1,50 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { CuratedBusiness } from '@/types/curated';
+import { Business } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function curatedToBusiness(c: CuratedBusiness): Business {
+  const categoryLower = c.category.toLowerCase();
+  const cuisineLower = c.cuisine.toLowerCase();
+  const categories = [cuisineLower, categoryLower].filter(Boolean);
+
+  let priceLevel = 2;
+  if (categoryLower.includes('fine dining') || categoryLower.includes('tasting')) priceLevel = 4;
+  else if (categoryLower.includes('casual') || categoryLower.includes('fast')) priceLevel = 1;
+  else if (categoryLower.includes('upscale') || c.michelinStatus) priceLevel = 3;
+
+  const hash = c.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return {
+    id: c.id,
+    name: c.name,
+    neighborhood: c.neighborhood,
+    cuisine: c.cuisine,
+    category: c.category,
+    location: c.location,
+    rating: 4.0 + (hash % 9) / 10,
+    reviewCount: 50 + (hash % 500),
+    priceLevel,
+    categories,
+    primaryCategory: cuisineLower,
+    address: c.address,
+    isOpenNow: true,
+    photoUrl: null,
+    hook: c.hook,
+    buzzFactor: c.buzzFactor,
+    michelinStatus: c.michelinStatus,
+    city: c.city,
+    source: 'curated',
+    attributes: {
+      hasPatio: c.hook.toLowerCase().includes('patio') || c.hook.toLowerCase().includes('outdoor'),
+      hasDelivery: categoryLower.includes('casual') || categoryLower.includes('fast'),
+      hasReservations: priceLevel >= 3,
+      cuisineType: c.cuisine,
+    },
+  };
 }
 
 export function calculateDistance(

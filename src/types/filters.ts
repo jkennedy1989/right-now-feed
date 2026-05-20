@@ -21,3 +21,22 @@ export interface FilterColor {
   text: string;
   border: string;
 }
+
+export type PrimarySignal = 'time' | 'weather' | 'day' | 'season' | 'events' | 'vibe';
+export type SecondaryGroup = 'speed' | 'budget' | 'work' | 'transit' | 'healthy' | 'indulgent';
+
+export interface PrimaryFilterPill {
+  id: string;
+  label: string;
+  emoji: string;
+  keyword: string;
+  signal: PrimarySignal;
+  secondaryGroups: SecondaryGroup[];
+}
+
+export interface SecondaryFilterPill {
+  id: string;
+  label: string;
+  keyword: string;
+  group: SecondaryGroup;
+}

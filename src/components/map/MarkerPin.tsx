@@ -7,9 +7,10 @@ interface MarkerPinProps {
   color: string;
   isActive: boolean;
   pulse?: boolean;
+  small?: boolean;
 }
 
-export function MarkerPin({ emoji, color, isActive, pulse }: MarkerPinProps) {
+export function MarkerPin({ emoji, color, isActive, pulse, small }: MarkerPinProps) {
   return (
     <div className="relative flex items-center justify-center">
       {pulse && (
@@ -21,11 +22,11 @@ export function MarkerPin({ emoji, color, isActive, pulse }: MarkerPinProps) {
       <div
         className={cn(
           'flex items-center justify-center rounded-full shadow-lg border-2 border-white transition-transform duration-200',
-          isActive ? 'w-10 h-10 scale-110' : 'w-8 h-8 scale-100'
+          small ? 'w-6 h-6 scale-90' : isActive ? 'w-10 h-10 scale-110' : 'w-8 h-8 scale-100'
         )}
         style={{ backgroundColor: color }}
       >
-        <span className={cn('select-none', isActive ? 'text-lg' : 'text-sm')}>
+        <span className={cn('select-none', small ? 'text-xs' : isActive ? 'text-lg' : 'text-sm')}>
           {emoji}
         </span>
       </div>

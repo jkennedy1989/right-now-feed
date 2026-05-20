@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Poppins } from 'next/font/google';
 import './globals.css';
 import { AppContextProvider } from '@/providers/AppContextProvider';
 import { GoogleMapsProvider } from '@/providers/GoogleMapsProvider';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased`}>
+      <body className={`${poppins.variable} antialiased`}>
         <AppContextProvider>
           <GoogleMapsProvider>
             {children}

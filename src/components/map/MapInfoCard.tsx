@@ -1,50 +1,39 @@
 'use client';
 
 import { Business } from '@/types';
-import { formatDistance, formatPrice } from '@/lib/utils';
-import { Star, X } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
+import { Star } from 'lucide-react';
+import { SaveButton } from '@/components/SaveButton';
+import { PhotoSlot } from '@/components/cards/PhotoSlot';
 
 interface MapInfoCardProps {
   business: Business;
   onClose: () => void;
 }
 
-export function MapInfoCard({ business, onClose }: MapInfoCardProps) {
+export function MapInfoCard({ business }: MapInfoCardProps) {
   return (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl p-3 w-72 z-50 border border-gray-100">
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100"
-      >
-        <X size={14} className="text-gray-500" />
-      </button>
-      <div className="flex gap-3">
-        {business.photoUrl && (
-          <img
-            src={business.photoUrl}
-            alt={business.name}
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm text-gray-900 truncate">
+    <div className="w-56 p-0 overflow-hidden">
+      <PhotoSlot name={business.name} city={business.city} className="w-full h-24 rounded-t-lg" />
+      <div className="flex flex-col gap-1 p-2">
+        <div className="flex items-start justify-between">
+          <h3 className="font-semibold text-sm text-gray-900 leading-tight pr-1">
             {business.name}
           </h3>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Star size={12} className="text-yellow-500 fill-yellow-500" />
-            <span className="text-xs text-gray-700">{business.rating}</span>
-            <span className="text-xs text-gray-400">({business.reviewCount})</span>
-            <span className="text-xs text-gray-400 ml-1">
-              {formatPrice(business.priceLevel)}
-            </span>
-          </div>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{business.address}</p>
-          {business.distance !== undefined && (
-            <p className="text-xs text-blue-600 font-medium mt-0.5">
-              {formatDistance(business.distance)}
-            </p>
+          <SaveButton itemId={business.id} size="sm" />
+        </div>
+        <div className="flex items-center gap-1">
+          <Star size={11} className="text-yellow-500 fill-yellow-500" />
+          <span className="text-xs text-gray-700">{business.rating.toFixed(1)}</span>
+          <span className="text-xs text-gray-400">{formatPrice(business.priceLevel)}</span>
+          {business.michelinStatus && (
+            <span className="text-[10px] bg-red-50 text-red-700 px-1 rounded">⭐ {business.michelinStatus}</span>
           )}
         </div>
+        {business.hook && (
+          <p className="text-xs text-gray-600 italic leading-tight line-clamp-2">{business.hook}</p>
+        )}
+        <p className="text-[11px] text-gray-400">{business.neighborhood}</p>
       </div>
     </div>
   );

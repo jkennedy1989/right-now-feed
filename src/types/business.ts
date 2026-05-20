@@ -1,6 +1,9 @@
 export interface Business {
   id: string;
   name: string;
+  neighborhood: string;
+  cuisine: string;
+  category: string;
   location: { lat: number; lng: number };
   rating: number;
   reviewCount: number;
@@ -13,6 +16,11 @@ export interface Business {
   photoUrl: string | null;
   phone?: string;
   website?: string;
+  hook: string;
+  buzzFactor: string;
+  michelinStatus: string | null;
+  city: string;
+  source: 'curated' | 'google';
   attributes: BusinessAttributes;
 }
 

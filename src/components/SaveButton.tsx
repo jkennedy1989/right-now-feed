@@ -6,10 +6,11 @@ import { useAppContext } from '@/providers/AppContextProvider';
 
 interface SaveButtonProps {
   itemId: string;
+  size?: 'sm' | 'md';
   className?: string;
 }
 
-export function SaveButton({ itemId, className }: SaveButtonProps) {
+export function SaveButton({ itemId, size = 'md', className }: SaveButtonProps) {
   const { isSaved, saveItem, unsaveItem } = useAppContext();
   const saved = isSaved(itemId);
 
@@ -22,18 +23,21 @@ export function SaveButton({ itemId, className }: SaveButtonProps) {
     }
   };
 
+  const iconSize = size === 'sm' ? 14 : 16;
+
   return (
     <button
       onClick={handleClick}
       className={cn(
-        'p-1.5 rounded-full transition-all duration-200',
-        saved ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
+        'rounded-full transition-all duration-200',
+        size === 'sm' ? 'p-1' : 'p-1.5',
+        saved ? 'text-brand bg-brand-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
         className
       )}
     >
       <Bookmark
-        size={16}
-        className={cn('transition-transform duration-200', saved && 'fill-blue-600 scale-110')}
+        size={iconSize}
+        className={cn('transition-transform duration-200', saved && 'fill-brand scale-110')}
       />
     </button>
   );

@@ -1,7 +1,11 @@
 'use client';
 
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { APIProvider } from '@vis.gl/react-google-maps';
 
 export function GoogleMapsProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY!}>
+      {children}
+    </APIProvider>
+  );
 }

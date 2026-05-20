@@ -24,7 +24,7 @@ export function AvailabilitySection() {
       {reservationPlaces.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center gap-1.5 px-4 mb-2">
-            <CalendarCheck size={14} className="text-blue-500" />
+            <CalendarCheck size={14} className="text-brand" />
             <span className="text-sm font-medium text-gray-700">Reserve a table</span>
           </div>
           <ScrollRow>
