@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Map as GoogleMap } from '@vis.gl/react-google-maps';
+import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox';
 import { Business } from '@/types';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { DEFAULT_LOCATION, DEFAULT_ZOOM } from '@/lib/constants';
-import { MapMarkers } from './MapMarkers';
 import { MapInfoCard } from './MapInfoCard';
+import { MarkerPin } from './MarkerPin';
+import { getCategoryEmoji } from '@/lib/api-clients/google-places';
+import { getFilterColor } from '@/lib/filter-color-map';
 
 interface MapContainerProps {
   height: number;
@@ -24,30 +26,70 @@ export function MapContainer({ height }: MapContainerProps) {
     return map;
   }, [filters]);
 
+  const hasActiveFilters = activeFilterIds.length > 0;
+
   const handleMarkerClick = useCallback((business: Business) => {
     setSelectedBusiness(business);
   }, []);
+
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
   return (
     <div
       className="relative w-full transition-[height] duration-300 ease-out"
       style={{ height: `${height}vh` }}
     >
-      <GoogleMap
-        defaultCenter={center}
-        defaultZoom={DEFAULT_ZOOM}
-        mapId="right-now-feed-map"
-        disableDefaultUI
-        gestureHandling="greedy"
-        className="w-full h-full"
+      <Map
+        initialViewState={{
+          longitude: center.lng,
+          latitude: center.lat,
+          zoom: DEFAULT_ZOOM,
+        }}
+        style={{ width: '100%', height: '100%' }}
+        mapStyle="mapbox://styles/mapbox/light-v11"
+        mapboxAccessToken={mapboxToken}
+        attributionControl={false}
       >
-        <MapMarkers
-          places={places}
-          activeFilterIds={activeFilterIds}
-          filterCategoryMap={filterCategoryMap}
-          onMarkerClick={handleMarkerClick}
-        />
-      </GoogleMap>
+        <NavigationControl position="top-right" showCompass={false} />
+        {places.map((place) => {
+          const matchesFilter = hasActiveFilters
+            ? activeFilterIds.some((filterId) => {
+                const category = filterCategoryMap.get(filterId);
+                if (!category) return false;
+                if (category === 'open-now') return place.isOpenNow;
+                return (
+                  place.categories.includes(category) ||
+                  place.primaryCategory === category
+                );
+              })
+            : true;
+
+          const emoji = getCategoryEmoji(place.primaryCategory);
+          const color = getFilterColor(place.primaryCategory).marker;
+
+          return (
+            <Marker
+              key={place.id}
+              longitude={place.location.lng}
+              latitude={place.location.lat}
+              anchor="bottom"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                handleMarkerClick(place);
+              }}
+            >
+              <div style={{ opacity: hasActiveFilters && !matchesFilter ? 0.3 : 1, transition: 'opacity 0.3s ease' }}>
+                <MarkerPin
+                  emoji={emoji}
+                  color={color}
+                  isActive={matchesFilter && hasActiveFilters}
+                  pulse={false}
+                />
+              </div>
+            </Marker>
+          );
+        })}
+      </Map>
 
       {selectedBusiness && (
         <MapInfoCard
