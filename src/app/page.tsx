@@ -32,7 +32,7 @@ export default function HomePage() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setCityDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2.5"
           >
             <Image src="/yelp-icon.svg" alt="" width={18} height={22} className="flex-shrink-0" />
             <h1 className="text-base font-bold text-gray-900 leading-tight">{cityName}</h1>
