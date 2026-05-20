@@ -7,7 +7,8 @@ import { FeedContainer } from '@/components/feed/FeedContainer';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CITIES, CityId, CITY_IDS } from '@/data/city-meta';
-import { Bookmark, ChevronDown, MapPin } from 'lucide-react';
+import { Bookmark, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 import { FeedOverlay } from '@/components/feed/FeedOverlay';
 
 export default function HomePage() {
@@ -33,7 +34,7 @@ export default function HomePage() {
             onClick={() => setCityDropdownOpen((prev) => !prev)}
             className="flex items-center gap-1.5"
           >
-            <MapPin size={18} className="text-brand" />
+            <Image src="/yelp-icon.svg" alt="" width={18} height={22} className="flex-shrink-0" />
             <h1 className="text-base font-bold text-gray-900 leading-tight">{cityName}</h1>
             <ChevronDown size={16} className="text-gray-400" />
           </button>
