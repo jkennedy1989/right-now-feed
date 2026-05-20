@@ -18,7 +18,7 @@ export function FeedContainer() {
   const showAllSections = !signal || signal === 'weather' || signal === 'vibe' || signal === 'events';
 
   return (
-    <div className="bg-gray-50 min-h-[60vh] pb-24">
+    <div className="bg-white min-h-[60vh] pb-24">
       <NeighborhoodModule />
       {(showMeal || showAllSections) && <MealTimeRow />}
       {showAllSections && <DontMissOutModule />}

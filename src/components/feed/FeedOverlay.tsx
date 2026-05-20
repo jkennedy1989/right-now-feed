@@ -34,7 +34,7 @@ export function FeedOverlay({ children }: FeedOverlayProps) {
 
   return (
     <div
-      className={`absolute left-0 right-0 bottom-0 z-20 flex flex-col bg-gray-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] transition-[top] duration-300 ease-out ${
+      className={`absolute left-0 right-0 bottom-0 z-20 flex flex-col bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-[top] duration-300 ease-out ${
         expanded ? 'top-[10%]' : 'top-[75%]'
       }`}
       onTouchStart={handleTouchStart}

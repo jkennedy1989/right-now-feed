@@ -107,7 +107,7 @@ function MapInner() {
         defaultCenter={cityCenter}
         defaultZoom={DEFAULT_ZOOM}
         mapId="right-now-feed-map"
-        colorScheme="DARK"
+        colorScheme="LIGHT"
         gestureHandling="greedy"
         disableDefaultUI
         clickableIcons={false}
