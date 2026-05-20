@@ -23,7 +23,7 @@ export function FilterPillBar() {
   return (
     <div className="absolute bottom-[27%] left-0 right-0 z-20 flex flex-col gap-1.5">
       {activePrimaryId && secondaryFilters.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 snap-x snap-mandatory pl-3 pr-3 animate-[slideUp_200ms_ease-out]">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 snap-x snap-mandatory pl-4 pr-3 animate-[slideUp_200ms_ease-out]">
           {secondaryFilters.map((pill) => (
             <SecondaryPill
               key={pill.id}
@@ -35,7 +35,7 @@ export function FilterPillBar() {
         </div>
       )}
 
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 snap-x snap-mandatory pl-3 pr-3">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 snap-x snap-mandatory pl-4 pr-3">
         {savedItemIds.length > 0 && (
           <button
             onClick={toggleSavedView}
