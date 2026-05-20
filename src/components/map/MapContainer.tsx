@@ -57,6 +57,23 @@ function MapInner() {
     }
   }, [map, cityCenter, selectedCity, setViewportCenter]);
 
+  useEffect(() => {
+    if (!map || !showSavedOnly) return;
+    const savedSet = new Set(savedItemIds);
+    const savedPlaces = places.filter((p) => savedSet.has(p.id));
+    if (savedPlaces.length === 0) return;
+
+    if (savedPlaces.length === 1) {
+      map.panTo(savedPlaces[0].location);
+      map.setZoom(DEFAULT_ZOOM);
+      return;
+    }
+
+    const bounds = new (window as any).google.maps.LatLngBounds();
+    savedPlaces.forEach((p) => bounds.extend(p.location));
+    map.fitBounds(bounds, { top: 80, bottom: 200, left: 40, right: 40 });
+  }, [map, showSavedOnly, savedItemIds, places]);
+
   const handleIdle = useCallback(() => {
     if (!map) return;
     const center = map.getCenter();
