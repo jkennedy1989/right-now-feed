@@ -42,6 +42,7 @@ interface AppState {
   isLoading: boolean;
   viewportCenter: { lat: number; lng: number } | null;
   isDynamicLoading: boolean;
+  showSavedOnly: boolean;
 }
 
 interface AppContextValue extends AppState {
@@ -58,6 +59,7 @@ interface AppContextValue extends AppState {
   setIsLoading: (loading: boolean) => void;
   setViewportCenter: (center: { lat: number; lng: number }) => void;
   onViewportChange: (center: { lat: number; lng: number }) => void;
+  toggleSavedView: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -88,6 +90,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [savedItemIds, setSavedItemIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   const location = CITIES[selectedCity].center;
 
@@ -171,7 +174,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const selectPrimary = useCallback((id: string) => {
     setActivePrimaryId((prev) => (prev === id ? null : id));
     setActiveSecondaryIds([]);
+    setShowSavedOnly(false);
   }, []);
+
+  const toggleSavedView = useCallback(() => {
+    setShowSavedOnly((prev) => !prev);
+    if (!showSavedOnly) {
+      setActivePrimaryId(null);
+      setActiveSecondaryIds([]);
+    }
+  }, [showSavedOnly]);
 
   const toggleSecondary = useCallback((id: string) => {
     setActiveSecondaryIds((prev) =>
@@ -215,6 +227,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     isLoading,
     viewportCenter,
     isDynamicLoading,
+    showSavedOnly,
     setCity,
     selectPrimary,
     toggleSecondary,
@@ -228,6 +241,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setIsLoading,
     setViewportCenter,
     onViewportChange,
+    toggleSavedView,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

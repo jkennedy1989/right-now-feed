@@ -23,7 +23,7 @@ function getCuisineEmoji(cuisine: string): string {
 }
 
 function MapInner() {
-  const { selectedCity, places, activePrimaryId, setViewportCenter, onViewportChange } = useAppContext();
+  const { selectedCity, places, activePrimaryId, savedItemIds, showSavedOnly, setViewportCenter, onViewportChange } = useAppContext();
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const map = useMap();
   const { location: userLocation } = useGeolocation();
@@ -78,8 +78,12 @@ function MapInner() {
   const hasActiveFilter = !!activePrimaryId;
 
   const visiblePlaces = useMemo(() => {
+    if (showSavedOnly) {
+      const savedSet = new Set(savedItemIds);
+      return places.filter((p) => savedSet.has(p.id));
+    }
+
     if (!hasActiveFilter) {
-      // No filter: show top 40 curated, fill remaining with dynamic
       const curated = places.filter((p) => p.source === 'curated').slice(0, MAX_PINS);
       const remaining = MAX_PINS - curated.length;
       if (remaining > 0) {
@@ -89,13 +93,10 @@ function MapInner() {
       return curated;
     }
 
-    // With a filter active, show all matching places (from dynamic search results + curated)
-    // Dynamic results are already filtered by keyword from the API
-    // Show dynamic first (most relevant), fill with curated
     const dynamic = places.filter((p) => p.source === 'google');
     const curated = places.filter((p) => p.source === 'curated');
     return [...dynamic, ...curated].slice(0, MAX_PINS);
-  }, [places, hasActiveFilter]);
+  }, [places, hasActiveFilter, showSavedOnly, savedItemIds]);
 
   const handleMarkerClick = useCallback((business: Business) => {
     setSelectedBusiness(business);
