@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppContext } from '@/providers/AppContextProvider';
-import { CITIES, CityId, CITY_IDS } from '@/data/city-meta';
+import { CITIES, CITY_IDS } from '@/data/city-meta';
 import { cn } from '@/lib/utils';
 
 export function CityToggle() {

@@ -69,6 +69,7 @@ function MapInner() {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bounds = new (window as any).google.maps.LatLngBounds();
     savedPlaces.forEach((p) => bounds.extend(p.location));
     map.fitBounds(bounds, { top: 80, bottom: 200, left: 40, right: 40 });
