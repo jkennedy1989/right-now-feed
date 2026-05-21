@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Business, ContextSignals, Deal, EventItem } from '@/types';
+import { Business, ContextSignals } from '@/types';
 import { PrimaryFilterPill, SecondaryFilterPill } from '@/types/filters';
 import { buildContextSignals, generatePrimaryPills, getSecondaryPills } from '@/lib/context-engine';
 import { WeatherData } from '@/types/context';
@@ -32,65 +32,53 @@ interface AppState {
   selectedCity: CityId;
   signals: ContextSignals;
   primaryFilters: PrimaryFilterPill[];
-  activePrimaryId: string | null;
+  activePrimaryIds: string[];
   secondaryFilters: SecondaryFilterPill[];
   activeSecondaryIds: string[];
   places: Business[];
-  events: EventItem[];
-  deals: Deal[];
-  savedItemIds: string[];
+  shortlistIds: string[];
   isLoading: boolean;
   viewportCenter: { lat: number; lng: number } | null;
   isDynamicLoading: boolean;
-  showSavedOnly: boolean;
+  selectedBusinessId: string | null;
+  showShortlistOnly: boolean;
 }
 
 interface AppContextValue extends AppState {
   setCity: (city: CityId) => void;
-  selectPrimary: (id: string) => void;
+  togglePrimary: (id: string) => void;
   toggleSecondary: (id: string) => void;
   clearFilters: () => void;
-  saveItem: (id: string) => void;
-  unsaveItem: (id: string) => void;
-  isSaved: (id: string) => boolean;
-  setPlaces: (places: Business[]) => void;
-  setEvents: (events: EventItem[]) => void;
-  setDeals: (deals: Deal[]) => void;
-  setIsLoading: (loading: boolean) => void;
+  shortlistItem: (id: string) => void;
+  unshortlistItem: (id: string) => void;
+  isShortlisted: (id: string) => boolean;
+  clearShortlist: () => void;
+  toggleShortlistView: () => void;
+  setSelectedBusinessId: (id: string | null) => void;
   setViewportCenter: (center: { lat: number; lng: number }) => void;
   onViewportChange: (center: { lat: number; lng: number }) => void;
-  toggleSavedView: () => void;
+  setLlmPrimaryPills: (pills: PrimaryFilterPill[]) => void;
+  setLlmSecondaryPills: (pills: SecondaryFilterPill[]) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const SAVED_ITEMS_KEY = 'rightnow-saved-v2';
-
-function loadSavedIds(): string[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const stored = localStorage.getItem(SAVED_ITEMS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
   const [selectedCity, setSelectedCity] = useState<CityId>('la');
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [activePrimaryId, setActivePrimaryId] = useState<string | null>(null);
+  const [activePrimaryIds, setActivePrimaryIds] = useState<string[]>([]);
   const [activeSecondaryIds, setActiveSecondaryIds] = useState<string[]>([]);
+  const [shortlistIds, setShortlistIds] = useState<string[]>([]);
+  const [showShortlistOnly, setShowShortlistOnly] = useState(false);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [llmPrimaryPills, setLlmPrimaryPills] = useState<PrimaryFilterPill[]>([]);
+  const [llmSecondaryPills, setLlmSecondaryPills] = useState<SecondaryFilterPill[]>([]);
   const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
     const curated = CITY_DATA['la'];
     return curated.map((c) => curatedToBusiness(c));
   });
-  const [events, setEvents] = useState<EventItem[]>([]);
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [savedItemIds, setSavedItemIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   const location = CITIES[selectedCity].center;
 
@@ -99,37 +87,48 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     [location, weather]
   );
 
-  const primaryFilters = useMemo(
+  const deterministicPrimary = useMemo(
     () => generatePrimaryPills(signals),
     [signals]
   );
 
-  const activePrimaryPill = useMemo(
-    () => primaryFilters.find((p) => p.id === activePrimaryId) || null,
-    [primaryFilters, activePrimaryId]
+  const primaryFilters = useMemo(
+    () => [...deterministicPrimary, ...llmPrimaryPills],
+    [deterministicPrimary, llmPrimaryPills]
+  );
+
+  const activePrimaryPills = useMemo(
+    () => primaryFilters.filter((p) => activePrimaryIds.includes(p.id)),
+    [primaryFilters, activePrimaryIds]
+  );
+
+  const deterministicSecondary = useMemo(
+    () => (activePrimaryPills.length > 0 ? getSecondaryPills(activePrimaryPills) : []),
+    [activePrimaryPills]
   );
 
   const secondaryFilters = useMemo(
-    () => (activePrimaryPill ? getSecondaryPills(activePrimaryPill) : []),
-    [activePrimaryPill]
+    () => [...deterministicSecondary, ...llmSecondaryPills],
+    [deterministicSecondary, llmSecondaryPills]
   );
 
   const searchKeyword = useMemo(() => {
-    if (!activePrimaryPill) return undefined;
-    let kw = activePrimaryPill.keyword;
+    if (activePrimaryPills.length === 0) return null;
+    const keywords = activePrimaryPills.slice(0, 3).map((p) => p.keyword);
+    let combined = keywords.join(' ');
     if (activeSecondaryIds.length > 0) {
       const secondaryKeywords = activeSecondaryIds
         .map((id) => secondaryFilters.find((s) => s.id === id)?.keyword)
         .filter(Boolean)
-        .join(' ');
-      kw = `${kw} ${secondaryKeywords}`;
+        .slice(0, 2);
+      combined = `${combined} ${secondaryKeywords.join(' ')}`;
     }
-    return kw;
-  }, [activePrimaryPill, activeSecondaryIds, secondaryFilters]);
+    return combined;
+  }, [activePrimaryPills, activeSecondaryIds, secondaryFilters]);
 
   const { dynamicPlaces, isLoading: isDynamicLoading, onViewportChange } = useDynamicPlaces({
     viewportCenter,
-    searchKeyword: searchKeyword || null,
+    searchKeyword,
     selectedCity,
     curatedCount: curatedPlaces.length,
   });
@@ -138,15 +137,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     () => mergePlaces(curatedPlaces, dynamicPlaces),
     [curatedPlaces, dynamicPlaces]
   );
-
-  useEffect(() => {
-    setSavedItemIds(loadSavedIds());
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(SAVED_ITEMS_KEY, JSON.stringify(savedItemIds));
-  }, [savedItemIds]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -163,27 +153,25 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
   const setCity = useCallback((city: CityId) => {
     setSelectedCity(city);
-    setActivePrimaryId(null);
+    setActivePrimaryIds([]);
     setActiveSecondaryIds([]);
     setWeather(null);
     setViewportCenter(null);
+    setSelectedBusinessId(null);
+    setLlmPrimaryPills([]);
+    setLlmSecondaryPills([]);
     const curated = CITY_DATA[city];
     setCuratedPlaces(curated.map((c) => curatedToBusiness(c)));
   }, []);
 
-  const selectPrimary = useCallback((id: string) => {
-    setActivePrimaryId((prev) => (prev === id ? null : id));
+  const togglePrimary = useCallback((id: string) => {
+    setActivePrimaryIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
     setActiveSecondaryIds([]);
-    setShowSavedOnly(false);
+    setShowShortlistOnly(false);
+    setLlmSecondaryPills([]);
   }, []);
-
-  const toggleSavedView = useCallback(() => {
-    setShowSavedOnly((prev) => !prev);
-    if (!showSavedOnly) {
-      setActivePrimaryId(null);
-      setActiveSecondaryIds([]);
-    }
-  }, [showSavedOnly]);
 
   const toggleSecondary = useCallback((id: string) => {
     setActiveSecondaryIds((prev) =>
@@ -192,56 +180,65 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const clearFilters = useCallback(() => {
-    setActivePrimaryId(null);
+    setActivePrimaryIds([]);
     setActiveSecondaryIds([]);
+    setShowShortlistOnly(false);
   }, []);
 
-  const saveItem = useCallback((id: string) => {
-    setSavedItemIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const shortlistItem = useCallback((id: string) => {
+    setShortlistIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
 
-  const unsaveItem = useCallback((id: string) => {
-    setSavedItemIds((prev) => prev.filter((i) => i !== id));
+  const unshortlistItem = useCallback((id: string) => {
+    setShortlistIds((prev) => prev.filter((i) => i !== id));
   }, []);
 
-  const isSaved = useCallback(
-    (id: string) => savedItemIds.includes(id),
-    [savedItemIds]
+  const isShortlisted = useCallback(
+    (id: string) => shortlistIds.includes(id),
+    [shortlistIds]
   );
 
-  const setPlaces = useCallback((newPlaces: Business[]) => {
-    setCuratedPlaces(newPlaces);
+  const clearShortlist = useCallback(() => {
+    setShortlistIds([]);
+    setShowShortlistOnly(false);
   }, []);
+
+  const toggleShortlistView = useCallback(() => {
+    setShowShortlistOnly((prev) => !prev);
+    if (!showShortlistOnly) {
+      setActivePrimaryIds([]);
+      setActiveSecondaryIds([]);
+    }
+  }, [showShortlistOnly]);
 
   const value: AppContextValue = {
     selectedCity,
     signals,
     primaryFilters,
-    activePrimaryId,
+    activePrimaryIds,
     secondaryFilters,
     activeSecondaryIds,
     places,
-    events,
-    deals,
-    savedItemIds,
+    shortlistIds,
     isLoading,
     viewportCenter,
     isDynamicLoading,
-    showSavedOnly,
+    selectedBusinessId,
+    showShortlistOnly,
     setCity,
-    selectPrimary,
+    togglePrimary,
     toggleSecondary,
     clearFilters,
-    saveItem,
-    unsaveItem,
-    isSaved,
-    setPlaces,
-    setEvents,
-    setDeals,
-    setIsLoading,
+    shortlistItem,
+    unshortlistItem,
+    isShortlisted,
+    clearShortlist,
+    toggleShortlistView,
+    setSelectedBusinessId,
     setViewportCenter,
     onViewportChange,
-    toggleSavedView,
+    setLlmPrimaryPills,
+    setLlmSecondaryPills,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

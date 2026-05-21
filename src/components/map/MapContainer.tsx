@@ -1,11 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { Business } from '@/types';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CITIES } from '@/data/city-meta';
-import { MapInfoCard } from './MapInfoCard';
 import { MarkerPin } from './MarkerPin';
 import { CATEGORY_EMOJI } from '@/lib/constants';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -23,8 +22,17 @@ function getCuisineEmoji(cuisine: string): string {
 }
 
 function MapInner() {
-  const { selectedCity, places, activePrimaryId, savedItemIds, showSavedOnly, setViewportCenter, onViewportChange } = useAppContext();
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const {
+    selectedCity,
+    places,
+    activePrimaryIds,
+    shortlistIds,
+    showShortlistOnly,
+    setViewportCenter,
+    onViewportChange,
+    setSelectedBusinessId,
+    selectedBusinessId,
+  } = useAppContext();
   const map = useMap();
   const { location: userLocation } = useGeolocation();
   const hasCenteredOnUser = useRef(false);
@@ -57,9 +65,10 @@ function MapInner() {
     }
   }, [map, cityCenter, selectedCity, setViewportCenter]);
 
+  // Fit bounds to shortlisted items
   useEffect(() => {
-    if (!map || !showSavedOnly) return;
-    const savedSet = new Set(savedItemIds);
+    if (!map || !showShortlistOnly) return;
+    const savedSet = new Set(shortlistIds);
     const savedPlaces = places.filter((p) => savedSet.has(p.id));
     if (savedPlaces.length === 0) return;
 
@@ -72,8 +81,8 @@ function MapInner() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bounds = new (window as any).google.maps.LatLngBounds();
     savedPlaces.forEach((p) => bounds.extend(p.location));
-    map.fitBounds(bounds, { top: 80, bottom: 200, left: 40, right: 40 });
-  }, [map, showSavedOnly, savedItemIds, places]);
+    map.fitBounds(bounds, { top: 120, bottom: 200, left: 40, right: 40 });
+  }, [map, showShortlistOnly, shortlistIds, places]);
 
   const handleIdle = useCallback(() => {
     if (!map) return;
@@ -93,11 +102,11 @@ function MapInner() {
     setViewportCenter(target);
   }, [map, userLocation, cityCenter, setViewportCenter]);
 
-  const hasActiveFilter = !!activePrimaryId;
+  const hasActiveFilter = activePrimaryIds.length > 0;
 
   const visiblePlaces = useMemo(() => {
-    if (showSavedOnly) {
-      const savedSet = new Set(savedItemIds);
+    if (showShortlistOnly) {
+      const savedSet = new Set(shortlistIds);
       return places.filter((p) => savedSet.has(p.id));
     }
 
@@ -114,11 +123,11 @@ function MapInner() {
     const dynamic = places.filter((p) => p.source === 'google');
     const curated = places.filter((p) => p.source === 'curated');
     return [...dynamic, ...curated].slice(0, MAX_PINS);
-  }, [places, hasActiveFilter, showSavedOnly, savedItemIds]);
+  }, [places, hasActiveFilter, showShortlistOnly, shortlistIds]);
 
   const handleMarkerClick = useCallback((business: Business) => {
-    setSelectedBusiness(business);
-  }, []);
+    setSelectedBusinessId(business.id);
+  }, [setSelectedBusinessId]);
 
   return (
     <div className="absolute inset-0">
@@ -131,12 +140,14 @@ function MapInner() {
         disableDefaultUI
         clickableIcons={false}
         onIdle={handleIdle}
+        onClick={() => setSelectedBusinessId(null)}
         style={{ width: '100%', height: '100%' }}
       >
         {visiblePlaces.map((place) => {
           const emoji = getCuisineEmoji(place.cuisine);
           const isGoogle = place.source === 'google';
-          const color = hasActiveFilter ? '#E00707' : '#6B7280';
+          const isSelected = place.id === selectedBusinessId;
+          const color = isSelected ? '#E00707' : hasActiveFilter ? '#E00707' : '#6B7280';
 
           return (
             <AdvancedMarker
@@ -147,26 +158,13 @@ function MapInner() {
               <MarkerPin
                 emoji={emoji}
                 color={color}
-                isActive={hasActiveFilter}
-                pulse={false}
-                small={isGoogle && !hasActiveFilter}
+                isActive={hasActiveFilter || isSelected}
+                pulse={isSelected}
+                small={isGoogle && !hasActiveFilter && !isSelected}
               />
             </AdvancedMarker>
           );
         })}
-
-        {selectedBusiness && (
-          <InfoWindow
-            position={selectedBusiness.location}
-            onCloseClick={() => setSelectedBusiness(null)}
-            pixelOffset={[0, -40]}
-          >
-            <MapInfoCard
-              business={selectedBusiness}
-              onClose={() => setSelectedBusiness(null)}
-            />
-          </InfoWindow>
-        )}
 
         {userLocation && (
           <AdvancedMarker position={userLocation}>
@@ -180,7 +178,7 @@ function MapInner() {
 
       <button
         onClick={handleRecenter}
-        className="absolute top-16 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        className="absolute bottom-48 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
         title="Center on my location"
       >
         <Locate size={20} className="text-gray-700" />

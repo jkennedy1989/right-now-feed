@@ -32,6 +32,7 @@ export interface PrimaryFilterPill {
   keyword: string;
   signal: PrimarySignal;
   secondaryGroups: SecondaryGroup[];
+  isLlmGenerated?: boolean;
 }
 
 export interface SecondaryFilterPill {
@@ -39,4 +40,5 @@ export interface SecondaryFilterPill {
   label: string;
   keyword: string;
   group: SecondaryGroup;
+  isLlmGenerated?: boolean;
 }

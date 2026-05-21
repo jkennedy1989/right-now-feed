@@ -3,17 +3,16 @@
 import { useCallback, useRef, useState } from 'react';
 import { MapContainer } from '@/components/map/MapContainer';
 import { FilterPillBar } from '@/components/filters/FilterPillBar';
-import { FeedContainer } from '@/components/feed/FeedContainer';
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { BottomCardSlot } from '@/components/map/BottomCardSlot';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CITIES, CityId, CITY_IDS } from '@/data/city-meta';
 import { Bookmark, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
-import { FeedOverlay } from '@/components/feed/FeedOverlay';
 
 export default function HomePage() {
-  const { selectedCity, setCity, savedItemIds } = useAppContext();
-  const [savedSheetOpen, setSavedSheetOpen] = useState(false);
+  const { selectedCity, setCity, shortlistIds } = useAppContext();
+  const [shortlistSheetOpen, setShortlistSheetOpen] = useState(false);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +24,7 @@ export default function HomePage() {
   }, [setCity]);
 
   return (
-    <main className="h-dvh relative overflow-hidden bg-gray-50">
+    <main className="h-dvh relative overflow-hidden">
       <MapContainer />
 
       <header className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between px-4 py-2.5 bg-white/60 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
@@ -59,24 +58,22 @@ export default function HomePage() {
         </div>
 
         <button
-          onClick={() => setSavedSheetOpen(true)}
+          onClick={() => setShortlistSheetOpen(true)}
           className="relative p-2 rounded-full hover:bg-white/50 transition-colors"
         >
           <Bookmark size={20} className="text-gray-700" />
-          {savedItemIds.length > 0 && (
+          {shortlistIds.length > 0 && (
             <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-brand text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              {String(savedItemIds.length).padStart(2, '0')}
+              {String(shortlistIds.length).padStart(2, '0')}
             </span>
           )}
         </button>
       </header>
 
       <FilterPillBar />
-      <FeedOverlay>
-        <FeedContainer />
-      </FeedOverlay>
+      <BottomCardSlot />
 
-      <BottomSheet isOpen={savedSheetOpen} onClose={() => setSavedSheetOpen(false)} />
+      <BottomSheet isOpen={shortlistSheetOpen} onClose={() => setShortlistSheetOpen(false)} />
     </main>
   );
 }

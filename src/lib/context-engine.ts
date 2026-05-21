@@ -271,16 +271,18 @@ export function generatePrimaryPills(signals: ContextSignals): PrimaryFilterPill
   return pills.slice(0, 7);
 }
 
-export function getSecondaryPills(primaryPill: PrimaryFilterPill): SecondaryFilterPill[] {
-  const groups = primaryPill.secondaryGroups;
-  const pills: SecondaryFilterPill[] = [];
+export function getSecondaryPills(primaryPills: PrimaryFilterPill | PrimaryFilterPill[]): SecondaryFilterPill[] {
+  const pillArray = Array.isArray(primaryPills) ? primaryPills : [primaryPills];
+  const allGroups = new Set<SecondaryGroup>();
+  pillArray.forEach((p) => p.secondaryGroups.forEach((g) => allGroups.add(g)));
 
-  for (const group of groups) {
+  const pills: SecondaryFilterPill[] = [];
+  for (const group of allGroups) {
     const pool = SECONDARY_POOLS[group];
     if (pool) {
       pills.push(...pickRandom(pool, 2));
     }
   }
 
-  return pills.slice(0, 8);
+  return pills.slice(0, 10);
 }
