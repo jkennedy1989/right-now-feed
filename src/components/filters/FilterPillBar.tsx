@@ -27,6 +27,19 @@ export function FilterPillBar() {
 
   return (
     <div className="flex flex-col gap-1.5">
+      {activePrimaryIds.length > 0 && secondaryFilters.length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 snap-x snap-mandatory pl-4 pr-3 animate-[slideUp_200ms_ease-out]">
+          {secondaryFilters.map((pill) => (
+            <SecondaryPill
+              key={pill.id}
+              pill={pill}
+              isActive={activeSecondaryIds.includes(pill.id)}
+              onToggle={() => toggleSecondary(pill.id)}
+            />
+          ))}
+        </div>
+      )}
+
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 snap-x snap-mandatory pl-4 pr-3">
         {shortlistIds.length > 0 && (
           <button
@@ -52,19 +65,6 @@ export function FilterPillBar() {
           />
         ))}
       </div>
-
-      {activePrimaryIds.length > 0 && secondaryFilters.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 snap-x snap-mandatory pl-4 pr-3 animate-[slideUp_200ms_ease-out]">
-          {secondaryFilters.map((pill) => (
-            <SecondaryPill
-              key={pill.id}
-              pill={pill}
-              isActive={activeSecondaryIds.includes(pill.id)}
-              onToggle={() => toggleSecondary(pill.id)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
