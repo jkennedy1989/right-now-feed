@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { MapContainer } from '@/components/map/MapContainer';
-import { FilterPillBar } from '@/components/filters/FilterPillBar';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { BottomCardSlot } from '@/components/map/BottomCardSlot';
 import { useAppContext } from '@/providers/AppContextProvider';
@@ -70,7 +69,6 @@ export default function HomePage() {
         </button>
       </header>
 
-      <FilterPillBar />
       <BottomCardSlot />
 
       <BottomSheet isOpen={shortlistSheetOpen} onClose={() => setShortlistSheetOpen(false)} />

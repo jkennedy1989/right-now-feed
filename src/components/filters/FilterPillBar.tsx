@@ -26,7 +26,7 @@ export function FilterPillBar() {
   if (selectedBusinessId) return null;
 
   return (
-    <div className="absolute bottom-4 left-0 right-0 z-20 flex flex-col gap-1.5 pb-2">
+    <div className="flex flex-col gap-1.5">
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 snap-x snap-mandatory pl-4 pr-3">
         {shortlistIds.length > 0 && (
           <button
