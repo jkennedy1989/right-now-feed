@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -44,12 +44,15 @@ function getTimeEmoji(hour: number): string {
 }
 
 export function NeighborhoodCard() {
-  const { selectedCity, places } = useAppContext();
+  const { selectedCity, places, signals } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState(false);
+  const [aiSummary, setAiSummary] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const fetchedForCity = useRef<string | null>(null);
   const hour = new Date().getHours();
 
-  const { topCuisines, trendingDishes, blurb } = useMemo(() => {
+  const { topCuisines, trendingDishes } = useMemo(() => {
     const cuisineCounts: Record<string, number> = {};
     places.forEach((p) => {
       const c = p.cuisine.split('/')[0].trim();
@@ -70,12 +73,33 @@ export function NeighborhoodCard() {
     const extracted = extractTrendingDishes(hooks);
     const trendingDishes = extracted.length >= 3 ? extracted : city.iconicDishes?.slice(0, 6) || [];
 
-    const blurb = trendingDishes.length > 0
-      ? `This is a placeholder blurb for a summary of today's trends, weather, things to do today in this city. This should always be three lines long and be dynamic.`
-      : `Here's what locals are visiting and ordering right now.`;
-
-    return { topCuisines, trendingDishes, blurb };
+    return { topCuisines, trendingDishes };
   }, [places, city.iconicDishes]);
+
+  useEffect(() => {
+    if (topCuisines.length === 0 || fetchedForCity.current === selectedCity) return;
+    fetchedForCity.current = selectedCity;
+    setSummaryLoading(true);
+
+    fetch('/api/neighborhood-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        city: city.name,
+        topCuisines,
+        trendingDishes,
+        mealPeriod: signals?.mealPeriod,
+        isWeekend: signals?.isWeekend,
+        hour,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => setAiSummary(data.summary || ''))
+      .catch(() => setAiSummary(''))
+      .finally(() => setSummaryLoading(false));
+  }, [selectedCity, topCuisines, trendingDishes, city.name, signals, hour]);
+
+  const blurb = aiSummary || "Here's what locals are visiting and ordering right now.";
 
   return (
     <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] overflow-hidden">
@@ -96,7 +120,14 @@ export function NeighborhoodCard() {
             </div>
           </div>
           {!isExpanded && (
-            <p className="text-xs text-gray-500 mt-1 line-clamp-3">{blurb}</p>
+            summaryLoading ? (
+              <div className="mt-1 space-y-1">
+                <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
+                <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1 line-clamp-3">{blurb}</p>
+            )
           )}
         </div>
         <div className="ml-3 flex-shrink-0">

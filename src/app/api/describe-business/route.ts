@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     ? `The user is looking for: ${activeFilters.join(', ')}.`
     : 'No specific filters active — the user is browsing nearby.';
 
-  const prompt = `You are a concise restaurant recommender. In 1-2 short sentences, explain why "${business.name}" is a great pick right now.
+  const prompt = `You are a concise restaurant recommender. In 1-2 short sentences (maximum 30 words), explain why "${business.name}" is a great pick right now.
 
 Context:
 - Cuisine: ${business.cuisine || 'Unknown'}
@@ -24,7 +24,7 @@ Context:
 - Time: ${signals?.mealPeriod || 'unknown'} (${signals?.isWeekend ? 'weekend' : 'weekday'})
 - ${filtersStr}
 
-Write a compelling 1-2 sentence description that highlights why this spot fits what the user wants. Be specific and conversational. Do not use quotes or generic phrases.`;
+Write a compelling description (30 words max) that highlights why this spot fits what the user wants. Be specific and conversational. Do not use quotes or generic phrases.`;
 
   try {
     const response = await client.messages.create({
