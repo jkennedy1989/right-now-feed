@@ -50,7 +50,7 @@ export function NeighborhoodCard() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [events, setEvents] = useState<Business[]>([]);
+  const [events, setEvents] = useState<{ id: string; title: string; start: string; venueName: string; category: string }[]>([]);
   const [newOpenings, setNewOpenings] = useState<Business[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
@@ -108,11 +108,11 @@ export function NeighborhoodCard() {
     eventsFetchedForCity.current = selectedCity;
 
     const center = CITIES[selectedCity].center;
-    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=8047&keyword=events+live+music+festival+tonight&maxResults=3`)
+    fetch(`/api/events?lat=${center.lat}&lng=${center.lng}&limit=3`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.results && Array.isArray(data.results)) {
-          setEvents(data.results.slice(0, 3));
+        if (data.events && Array.isArray(data.events)) {
+          setEvents(data.events);
         }
       })
       .catch(() => setEvents([]));
@@ -142,10 +142,10 @@ export function NeighborhoodCard() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] overflow-hidden max-h-[60vh] flex flex-col">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 flex items-center justify-between text-left"
+        className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
@@ -180,7 +180,7 @@ export function NeighborhoodCard() {
       </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 animate-[slideUp_200ms_ease-out]">
+        <div className="px-4 pb-4 animate-[slideUp_200ms_ease-out] overflow-y-auto flex-1 min-h-0">
           <p className="text-xs text-gray-500 mb-3">{blurb}</p>
 
           {topCuisines.length > 0 && (
@@ -221,27 +221,8 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {events.length > 0 && (
-            <div className="mb-3">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <span>📅</span> Happening tonight
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {events.map((event) => (
-                  <button
-                    key={event.id}
-                    onClick={() => handlePlaceClick(event)}
-                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
-                  >
-                    {event.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {newOpenings.length > 0 && (
-            <div>
+            <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>✨</span> New openings
               </p>
@@ -254,6 +235,31 @@ export function NeighborhoodCard() {
                   >
                     {opening.name}
                   </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {events.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span>📅</span> Upcoming events
+              </p>
+              <div className="space-y-2.5">
+                {events.map((event) => (
+                  <div key={event.id} className="flex flex-col gap-0.5">
+                    <p className="text-xs font-medium text-gray-900">{event.title}</p>
+                    <p className="text-[11px] text-gray-500">
+                      {new Date(event.start).toLocaleString(undefined, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                      {event.venueName && ` · ${event.venueName}`}
+                    </p>
+                  </div>
                 ))}
               </div>
             </div>

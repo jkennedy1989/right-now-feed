@@ -35,6 +35,7 @@ function MapInner() {
     searchOverride,
     pendingFitToResults,
     clearPendingFit,
+    secondaryFilters,
   } = useAppContext();
   const map = useMap();
   const { location: userLocation } = useGeolocation();
@@ -135,6 +136,7 @@ function MapInner() {
   }, [map, userLocation, cityCenter, setViewportCenter]);
 
   const hasActiveFilter = activePrimaryIds.length > 0;
+  const hasSecondaryRow = !searchOverride && hasActiveFilter && secondaryFilters.length > 0;
 
   const visiblePlaces = useMemo(() => {
     if (showShortlistOnly) {
@@ -219,7 +221,7 @@ function MapInner() {
 
       <button
         onClick={handleRecenter}
-        className="absolute bottom-48 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        className={`absolute ${hasSecondaryRow ? 'bottom-56' : 'bottom-48'} right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-all duration-200`}
         title="Center on my location"
       >
         <Locate size={20} className="text-gray-700" />

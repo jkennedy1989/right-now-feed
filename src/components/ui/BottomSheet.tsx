@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { X, Bookmark, Trash2, Share2, Star } from 'lucide-react';
+import { X, Bookmark, Trash2, ArrowUpFromLine, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Business } from '@/types';
 import { formatPrice } from '@/lib/utils';
@@ -48,7 +48,7 @@ function CompareView({ places }: { places: Business[] }) {
 }
 
 export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
-  const { shortlistIds, unshortlistItem, clearShortlist, places, selectedCity } = useAppContext();
+  const { shortlistIds, unshortlistItem, places, selectedCity } = useAppContext();
   const [compareMode, setCompareMode] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -107,7 +107,7 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
               <div className="flex items-center gap-2">
                 <Bookmark size={18} className="text-brand" />
                 <h2 className="text-base font-bold text-gray-900">
-                  Your Shortlist ({shortlistedPlaces.length})
+                  Shortlisted ({shortlistedPlaces.length})
                 </h2>
               </div>
               <div className="flex items-center gap-1">
@@ -130,22 +130,14 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
                   </>
                 )}
                 {shortlistedPlaces.length > 0 && (
-                  <>
-                    <button
-                      onClick={handleShare}
-                      disabled={isSharing}
-                      className="p-1.5 rounded-md text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                      title="Share shortlist"
-                    >
-                      <Share2 size={16} />
-                    </button>
-                    <button
-                      onClick={clearShortlist}
-                      className="text-xs text-gray-500 hover:text-brand px-2 py-1 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      Clear all
-                    </button>
-                  </>
+                  <button
+                    onClick={handleShare}
+                    disabled={isSharing}
+                    className="p-1.5 rounded-md text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    title="Share shortlist"
+                  >
+                    <ArrowUpFromLine size={16} />
+                  </button>
                 )}
                 <button
                   onClick={onClose}

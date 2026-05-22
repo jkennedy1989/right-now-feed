@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { Business, ContextSignals } from '@/types';
@@ -97,6 +98,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
+  const allPlacesRef = useRef<Business[]>([]);
+
   const [llmPrimaryPills, setLlmPrimaryPills] = useState<PrimaryFilterPill[]>([]);
   const [llmSecondaryPills, setLlmSecondaryPills] = useState<SecondaryFilterPill[]>([]);
   const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
@@ -162,11 +165,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     const withInjected = injectedPlaces.length > 0
       ? [...merged, ...injectedPlaces.filter((ip) => !merged.some((m) => m.id === ip.id))]
       : merged;
+    allPlacesRef.current = withInjected;
     if (activeSecondaryPills.length === 0) return withInjected;
-    return withInjected.filter((place) =>
+    const filtered = withInjected.filter((place) =>
       activeSecondaryPills.every((pill) => matchesSecondaryFilter(place, pill, viewportCenter))
     );
-  }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills, viewportCenter]);
+    const shortlistedMissing = withInjected.filter(
+      (p) => shortlistIds.includes(p.id) && !filtered.some((f) => f.id === p.id)
+    );
+    return shortlistedMissing.length > 0 ? [...filtered, ...shortlistedMissing] : filtered;
+  }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills, viewportCenter, shortlistIds]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -224,6 +232,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       }
       return [...prev, id];
     });
+    const business = allPlacesRef.current.find((p) => p.id === id);
+    if (business) {
+      setInjectedPlaces((prev) => prev.some((p) => p.id === id) ? prev : [...prev, business]);
+    }
   }, []);
 
   const unshortlistItem = useCallback((id: string) => {
