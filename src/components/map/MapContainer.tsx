@@ -32,6 +32,9 @@ function MapInner() {
     onViewportChange,
     setSelectedBusinessId,
     selectedBusinessId,
+    searchOverride,
+    pendingFitToResults,
+    clearPendingFit,
   } = useAppContext();
   const map = useMap();
   const { location: userLocation } = useGeolocation();
@@ -83,6 +86,35 @@ function MapInner() {
     savedPlaces.forEach((p) => bounds.extend(p.location));
     map.fitBounds(bounds, { top: 120, bottom: 200, left: 40, right: 40 });
   }, [map, showShortlistOnly, shortlistIds, places]);
+
+  // Fit bounds to show search override results
+  useEffect(() => {
+    if (!map || !pendingFitToResults || !searchOverride) return;
+    const dynamicResults = places.filter((p) => p.source === 'google');
+    if (dynamicResults.length === 0) return;
+
+    clearPendingFit();
+
+    if (dynamicResults.length === 1) {
+      map.panTo(dynamicResults[0].location);
+      map.setZoom(DEFAULT_ZOOM);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bounds = new (window as any).google.maps.LatLngBounds();
+    dynamicResults.slice(0, 10).forEach((p) => bounds.extend(p.location));
+    map.fitBounds(bounds, { top: 120, bottom: 200, left: 40, right: 40 });
+  }, [map, pendingFitToResults, searchOverride, places, clearPendingFit]);
+
+  // Pan to selected business
+  useEffect(() => {
+    if (!map || !selectedBusinessId) return;
+    const place = places.find((p) => p.id === selectedBusinessId);
+    if (place) {
+      map.panTo(place.location);
+    }
+  }, [map, selectedBusinessId, places]);
 
   const handleIdle = useCallback(() => {
     if (!map) return;

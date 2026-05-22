@@ -43,6 +43,7 @@ interface AppState {
   selectedBusinessId: string | null;
   showShortlistOnly: boolean;
   searchOverride: string | null;
+  pendingFitToResults: boolean;
 }
 
 interface AppContextValue extends AppState {
@@ -61,6 +62,7 @@ interface AppContextValue extends AppState {
   setLlmPrimaryPills: (pills: PrimaryFilterPill[]) => void;
   setLlmSecondaryPills: (pills: SecondaryFilterPill[]) => void;
   setSearchOverride: (keyword: string | null) => void;
+  clearPendingFit: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -73,7 +75,17 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
-  const [searchOverride, setSearchOverride] = useState<string | null>(null);
+  const [searchOverride, setSearchOverrideRaw] = useState<string | null>(null);
+  const [pendingFitToResults, setPendingFitToResults] = useState(false);
+
+  const setSearchOverride = useCallback((keyword: string | null) => {
+    setSearchOverrideRaw(keyword);
+    if (keyword) setPendingFitToResults(true);
+  }, []);
+
+  const clearPendingFit = useCallback(() => {
+    setPendingFitToResults(false);
+  }, []);
   const [llmPrimaryPills, setLlmPrimaryPills] = useState<PrimaryFilterPill[]>([]);
   const [llmSecondaryPills, setLlmSecondaryPills] = useState<SecondaryFilterPill[]>([]);
   const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
@@ -240,6 +252,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     selectedBusinessId,
     showShortlistOnly,
     searchOverride,
+    pendingFitToResults,
     setCity,
     togglePrimary,
     toggleSecondary,
@@ -255,6 +268,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setLlmPrimaryPills,
     setLlmSecondaryPills,
     setSearchOverride,
+    clearPendingFit,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

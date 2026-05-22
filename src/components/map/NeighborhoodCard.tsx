@@ -49,14 +49,20 @@ function getTimeEmoji(hour: number): string {
   return '🌤️';
 }
 
+interface NewOpening {
+  id: string;
+  name: string;
+  location: { lat: number; lng: number };
+}
+
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals, setSearchOverride } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [newOpenings, setNewOpenings] = useState<string[]>([]);
+  const [newOpenings, setNewOpenings] = useState<NewOpening[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
   const hour = new Date().getHours();
@@ -122,7 +128,11 @@ export function NeighborhoodCard() {
       .then((r) => r.json())
       .then((data) => {
         if (data.results && Array.isArray(data.results)) {
-          setNewOpenings(data.results.slice(0, 5).map((p: { name: string }) => p.name));
+          setNewOpenings(data.results.slice(0, 5).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
+            id: p.id,
+            name: p.name,
+            location: p.location,
+          })));
         }
       })
       .catch(() => setNewOpenings([]));
@@ -132,6 +142,12 @@ export function NeighborhoodCard() {
 
   const handleChipClick = (keyword: string) => {
     setSearchOverride(keyword);
+    setIsExpanded(false);
+  };
+
+  const handleNewOpeningClick = (opening: NewOpening) => {
+    setSelectedBusinessId(opening.id);
+    setViewportCenter(opening.location);
     setIsExpanded(false);
   };
 
@@ -239,13 +255,13 @@ export function NeighborhoodCard() {
                 <span>✨</span> New openings
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {newOpenings.map((name) => (
+                {newOpenings.map((opening) => (
                   <button
-                    key={name}
-                    onClick={() => handleChipClick(name)}
+                    key={opening.id}
+                    onClick={() => handleNewOpeningClick(opening)}
                     className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
                   >
-                    {name}
+                    {opening.name}
                   </button>
                 ))}
               </div>
