@@ -23,7 +23,7 @@ export default function HomePage() {
   }, [setCity]);
 
   return (
-    <main className="h-dvh relative overflow-hidden">
+    <main className="h-full relative overflow-hidden">
       <MapContainer />
 
       <header className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between px-4 py-2.5 bg-white/60 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
