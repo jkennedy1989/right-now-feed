@@ -76,7 +76,7 @@ export function NeighborhoodCard() {
 
     const topCuisines = Object.entries(cuisineCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 3)
       .map(([name]) => name);
 
     const hooks = places
@@ -86,7 +86,7 @@ export function NeighborhoodCard() {
       .map((p) => p.hook);
 
     const extracted = extractTrendingDishes(hooks);
-    const trendingDishes = extracted.length >= 3 ? extracted : city.iconicDishes?.slice(0, 6) || [];
+    const trendingDishes = extracted.length >= 3 ? extracted.slice(0, 3) : city.iconicDishes?.slice(0, 3) || [];
 
     return { topCuisines, trendingDishes };
   }, [places, city.iconicDishes]);
@@ -119,11 +119,11 @@ export function NeighborhoodCard() {
     eventsFetchedForCity.current = selectedCity;
 
     const center = CITIES[selectedCity].center;
-    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=8047&keyword=events+live+music+festival+tonight&maxResults=5`)
+    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=8047&keyword=events+live+music+festival+tonight&maxResults=3`)
       .then((r) => r.json())
       .then((data) => {
         if (data.results && Array.isArray(data.results)) {
-          setEvents(data.results.slice(0, 5).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
+          setEvents(data.results.slice(0, 3).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
             id: p.id,
             name: p.name,
             location: p.location,
@@ -132,11 +132,11 @@ export function NeighborhoodCard() {
       })
       .catch(() => setEvents([]));
 
-    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=3219&keyword=new+restaurant+opening&maxResults=5`)
+    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=3219&keyword=new+restaurant+opening&maxResults=3`)
       .then((r) => r.json())
       .then((data) => {
         if (data.results && Array.isArray(data.results)) {
-          setNewOpenings(data.results.slice(0, 5).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
+          setNewOpenings(data.results.slice(0, 3).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
             id: p.id,
             name: p.name,
             location: p.location,
@@ -184,7 +184,7 @@ export function NeighborhoodCard() {
                 <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
               </div>
             ) : (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-3">{blurb}</p>
+              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{blurb}</p>
             )
           )}
         </div>
