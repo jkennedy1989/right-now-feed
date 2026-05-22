@@ -29,19 +29,7 @@ export function FilterPillBar() {
 
   return (
     <div className="flex flex-col gap-1.5">
-      {searchOverride && (
-        <div className="flex gap-2" style={{ paddingLeft: 16, paddingRight: 12 }}>
-          <button
-            onClick={() => setSearchOverride(null)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-brand-50 text-brand-600 border border-brand-200"
-          >
-            <span className="truncate max-w-[150px]">{searchOverride}</span>
-            <X size={12} />
-          </button>
-        </div>
-      )}
-
-      {activePrimaryIds.length > 0 && secondaryFilters.length > 0 && (
+      {!searchOverride && activePrimaryIds.length > 0 && secondaryFilters.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 animate-[slideUp_200ms_ease-out]" style={{ paddingLeft: 16, paddingRight: 12 }}>
           {secondaryFilters.map((pill) => (
             <SecondaryPill
@@ -55,29 +43,41 @@ export function FilterPillBar() {
       )}
 
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1" style={{ paddingLeft: 16, paddingRight: 12 }}>
-        {shortlistIds.length > 0 && (
+        {searchOverride ? (
           <button
-            onClick={toggleShortlistView}
-            className={cn(
-              'flex items-center gap-1 px-3 py-2.5 rounded-full text-sm font-medium whitespace-nowrap snap-start',
-              'border transition-all duration-200 shadow-sm',
-              showShortlistOnly
-                ? 'bg-brand text-white border-brand-700 shadow-md'
-                : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
-            )}
+            onClick={() => setSearchOverride(null)}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap bg-brand text-white border border-brand-700 shadow-sm"
           >
-            <Bookmark size={14} className={showShortlistOnly ? 'fill-white' : ''} />
-            <span>{shortlistIds.length}</span>
+            <span>{searchOverride}</span>
+            <X size={14} />
           </button>
+        ) : (
+          <>
+            {shortlistIds.length > 0 && (
+              <button
+                onClick={toggleShortlistView}
+                className={cn(
+                  'flex items-center gap-1 px-3 py-2.5 rounded-full text-sm font-medium whitespace-nowrap snap-start',
+                  'border transition-all duration-200 shadow-sm',
+                  showShortlistOnly
+                    ? 'bg-brand text-white border-brand-700 shadow-md'
+                    : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
+                )}
+              >
+                <Bookmark size={14} className={showShortlistOnly ? 'fill-white' : ''} />
+                <span>{shortlistIds.length}</span>
+              </button>
+            )}
+            {primaryFilters.map((pill) => (
+              <PrimaryPill
+                key={pill.id}
+                pill={pill}
+                isActive={activePrimaryIds.includes(pill.id)}
+                onToggle={() => togglePrimary(pill.id)}
+              />
+            ))}
+          </>
         )}
-        {primaryFilters.map((pill) => (
-          <PrimaryPill
-            key={pill.id}
-            pill={pill}
-            isActive={activePrimaryIds.includes(pill.id)}
-            onToggle={() => togglePrimary(pill.id)}
-          />
-        ))}
       </div>
     </div>
   );
