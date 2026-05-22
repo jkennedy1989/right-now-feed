@@ -2,15 +2,10 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
+import { Business } from '@/types';
 import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { WeatherTicker } from '@/components/header/WeatherTicker';
-
-interface EventPlace {
-  id: string;
-  name: string;
-  location: { lat: number; lng: number };
-}
 
 const DISH_PATTERNS = [
   /known for (?:the |its )?(.*?)(?:\.|,|$)/i,
@@ -49,20 +44,14 @@ function getTimeEmoji(hour: number): string {
   return '🌤️';
 }
 
-interface NewOpening {
-  id: string;
-  name: string;
-  location: { lat: number; lng: number };
-}
-
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [events, setEvents] = useState<EventPlace[]>([]);
-  const [newOpenings, setNewOpenings] = useState<NewOpening[]>([]);
+  const [events, setEvents] = useState<Business[]>([]);
+  const [newOpenings, setNewOpenings] = useState<Business[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
   const hour = new Date().getHours();
@@ -123,11 +112,7 @@ export function NeighborhoodCard() {
       .then((r) => r.json())
       .then((data) => {
         if (data.results && Array.isArray(data.results)) {
-          setEvents(data.results.slice(0, 3).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
-            id: p.id,
-            name: p.name,
-            location: p.location,
-          })));
+          setEvents(data.results.slice(0, 3));
         }
       })
       .catch(() => setEvents([]));
@@ -136,11 +121,7 @@ export function NeighborhoodCard() {
       .then((r) => r.json())
       .then((data) => {
         if (data.results && Array.isArray(data.results)) {
-          setNewOpenings(data.results.slice(0, 3).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
-            id: p.id,
-            name: p.name,
-            location: p.location,
-          })));
+          setNewOpenings(data.results.slice(0, 3));
         }
       })
       .catch(() => setNewOpenings([]));
@@ -153,9 +134,10 @@ export function NeighborhoodCard() {
     setIsExpanded(false);
   };
 
-  const handleNewOpeningClick = (opening: NewOpening) => {
-    setSelectedBusinessId(opening.id);
-    setViewportCenter(opening.location);
+  const handlePlaceClick = (place: Business) => {
+    injectPlace(place);
+    setSelectedBusinessId(place.id);
+    setViewportCenter(place.location);
     setIsExpanded(false);
   };
 
@@ -248,7 +230,7 @@ export function NeighborhoodCard() {
                 {events.map((event) => (
                   <button
                     key={event.id}
-                    onClick={() => handleNewOpeningClick(event)}
+                    onClick={() => handlePlaceClick(event)}
                     className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
                   >
                     {event.name}
@@ -267,7 +249,7 @@ export function NeighborhoodCard() {
                 {newOpenings.map((opening) => (
                   <button
                     key={opening.id}
-                    onClick={() => handleNewOpeningClick(opening)}
+                    onClick={() => handlePlaceClick(opening)}
                     className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
                   >
                     {opening.name}

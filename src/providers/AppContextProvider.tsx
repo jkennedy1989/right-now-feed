@@ -64,6 +64,7 @@ interface AppContextValue extends AppState {
   setLlmSecondaryPills: (pills: SecondaryFilterPill[]) => void;
   setSearchOverride: (keyword: string | null) => void;
   clearPendingFit: () => void;
+  injectPlace: (place: Business) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -87,6 +88,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const clearPendingFit = useCallback(() => {
     setPendingFitToResults(false);
   }, []);
+  const [injectedPlaces, setInjectedPlaces] = useState<Business[]>([]);
+
+  const injectPlace = useCallback((place: Business) => {
+    setInjectedPlaces((prev) => {
+      if (prev.some((p) => p.id === place.id)) return prev;
+      return [...prev, place];
+    });
+  }, []);
+
   const [llmPrimaryPills, setLlmPrimaryPills] = useState<PrimaryFilterPill[]>([]);
   const [llmSecondaryPills, setLlmSecondaryPills] = useState<SecondaryFilterPill[]>([]);
   const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
@@ -152,11 +162,14 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
   const places = useMemo(() => {
     const merged = mergePlaces(curatedPlaces, dynamicPlaces);
-    if (activeSecondaryPills.length === 0) return merged;
-    return merged.filter((place) =>
+    const withInjected = injectedPlaces.length > 0
+      ? [...merged, ...injectedPlaces.filter((ip) => !merged.some((m) => m.id === ip.id))]
+      : merged;
+    if (activeSecondaryPills.length === 0) return withInjected;
+    return withInjected.filter((place) =>
       activeSecondaryPills.every((pill) => matchesSecondaryFilter(place, pill))
     );
-  }, [curatedPlaces, dynamicPlaces, activeSecondaryPills]);
+  }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -270,6 +283,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setLlmSecondaryPills,
     setSearchOverride,
     clearPendingFit,
+    injectPlace,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
