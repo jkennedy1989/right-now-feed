@@ -2,7 +2,7 @@
 
 import { useAppContext } from '@/providers/AppContextProvider';
 import { PrimaryPill, SecondaryPill } from './FilterPill';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLlmPills } from '@/hooks/useLlmPills';
 
@@ -18,6 +18,8 @@ export function FilterPillBar() {
     showShortlistOnly,
     toggleShortlistView,
     selectedBusinessId,
+    searchOverride,
+    setSearchOverride,
   } = useAppContext();
 
   useLlmPills();
@@ -27,6 +29,18 @@ export function FilterPillBar() {
 
   return (
     <div className="flex flex-col gap-1.5">
+      {searchOverride && (
+        <div className="flex gap-2" style={{ paddingLeft: 16, paddingRight: 12 }}>
+          <button
+            onClick={() => setSearchOverride(null)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-brand-50 text-brand-600 border border-brand-200"
+          >
+            <span className="truncate max-w-[150px]">{searchOverride}</span>
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       {activePrimaryIds.length > 0 && secondaryFilters.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 animate-[slideUp_200ms_ease-out]" style={{ paddingLeft: 16, paddingRight: 12 }}>
           {secondaryFilters.map((pill) => (

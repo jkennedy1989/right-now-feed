@@ -6,6 +6,12 @@ import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { WeatherTicker } from '@/components/header/WeatherTicker';
 
+interface EventItem {
+  id: string;
+  name: string;
+  timeStart: number;
+}
+
 const DISH_PATTERNS = [
   /known for (?:the |its )?(.*?)(?:\.|,|$)/i,
   /famous for (?:the |its )?(.*?)(?:\.|,|$)/i,
@@ -44,12 +50,15 @@ function getTimeEmoji(hour: number): string {
 }
 
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [newOpenings, setNewOpenings] = useState<string[]>([]);
   const fetchedForCity = useRef<string | null>(null);
+  const eventsFetchedForCity = useRef<string | null>(null);
   const hour = new Date().getHours();
 
   const { topCuisines, trendingDishes } = useMemo(() => {
@@ -99,7 +108,32 @@ export function NeighborhoodCard() {
       .finally(() => setSummaryLoading(false));
   }, [selectedCity, topCuisines, trendingDishes, city.name, signals, hour]);
 
+  useEffect(() => {
+    if (!isExpanded || eventsFetchedForCity.current === selectedCity) return;
+    eventsFetchedForCity.current = selectedCity;
+
+    const center = CITIES[selectedCity].center;
+    fetch(`/api/yelp/events?lat=${center.lat}&lng=${center.lng}&limit=5`)
+      .then((r) => r.json())
+      .then((data) => setEvents(Array.isArray(data) ? data.slice(0, 5) : []))
+      .catch(() => setEvents([]));
+
+    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=3219&keyword=new+restaurant+opening&maxResults=5`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.results && Array.isArray(data.results)) {
+          setNewOpenings(data.results.slice(0, 5).map((p: { name: string }) => p.name));
+        }
+      })
+      .catch(() => setNewOpenings([]));
+  }, [isExpanded, selectedCity]);
+
   const blurb = aiSummary || "Here's what locals are visiting and ordering right now.";
+
+  const handleChipClick = (keyword: string) => {
+    setSearchOverride(keyword);
+    setIsExpanded(false);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] overflow-hidden">
@@ -150,30 +184,69 @@ export function NeighborhoodCard() {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {topCuisines.map((cuisine) => (
-                  <span
+                  <button
                     key={cuisine}
-                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100"
+                    onClick={() => handleChipClick(`${cuisine} restaurant`)}
+                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
                   >
                     {cuisine}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
           {trendingDishes.length > 0 && (
-            <div>
+            <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>🔥</span> Trending dishes
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {trendingDishes.map((dish) => (
-                  <span
+                  <button
                     key={dish}
-                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100"
+                    onClick={() => handleChipClick(dish)}
+                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
                   >
                     {dish}
-                  </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {events.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <span>📅</span> Events today
+              </p>
+              <div className="space-y-1.5">
+                {events.map((event) => (
+                  <div key={event.id} className="flex items-center justify-between">
+                    <span className="text-xs text-gray-700 truncate">{event.name}</span>
+                    <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">
+                      {new Date(event.timeStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {newOpenings.length > 0 && (
+            <div>
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <span>✨</span> New openings
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {newOpenings.map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => handleChipClick(name)}
+                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
+                  >
+                    {name}
+                  </button>
                 ))}
               </div>
             </div>

@@ -5,6 +5,8 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { X, Bookmark, Trash2, Share2, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Business } from '@/types';
+import { formatPrice } from '@/lib/utils';
+import { PlanModal } from '@/components/plan/PlanModal';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -34,7 +36,7 @@ function CompareView({ places }: { places: Business[] }) {
                   {place.rating}
                 </span>
               </td>
-              <td className="py-2.5 px-2 text-gray-600">{place.priceLevel || '$$'}</td>
+              <td className="py-2.5 px-2 text-gray-600">{formatPrice(place.priceLevel)}</td>
               <td className="py-2.5 px-2 text-gray-600 max-w-[80px] truncate">{place.cuisine}</td>
               <td className="py-2.5 px-2 text-gray-600 max-w-[80px] truncate">{place.neighborhood}</td>
             </tr>
@@ -50,6 +52,7 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
   const [compareMode, setCompareMode] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [planOpen, setPlanOpen] = useState(false);
 
   const shortlistedPlaces = places.filter((p) => shortlistIds.includes(p.id));
 
@@ -82,6 +85,7 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -108,14 +112,22 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
               </div>
               <div className="flex items-center gap-1">
                 {shortlistedPlaces.length >= 2 && (
-                  <button
-                    onClick={() => setCompareMode(!compareMode)}
-                    className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${
-                      compareMode ? 'bg-brand-50 text-brand-600' : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    Compare
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setCompareMode(!compareMode)}
+                      className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${
+                        compareMode ? 'bg-brand-50 text-brand-600' : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      Compare
+                    </button>
+                    <button
+                      onClick={() => setPlanOpen(true)}
+                      className="text-xs font-medium px-2 py-1 rounded-md text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
+                      Plan
+                    </button>
+                  </>
                 )}
                 {shortlistedPlaces.length > 0 && (
                   <>
@@ -183,5 +195,8 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
         </>
       )}
     </AnimatePresence>
+
+    <PlanModal isOpen={planOpen} onClose={() => setPlanOpen(false)} />
+    </>
   );
 }

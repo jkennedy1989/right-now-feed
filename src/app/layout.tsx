@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import './globals.css';
 import { AppContextProvider } from '@/providers/AppContextProvider';
 import { GoogleMapsProvider } from '@/providers/GoogleMapsProvider';
+import { DeviceFrame } from '@/components/ui/DeviceFrame';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body className={`${poppins.variable} antialiased`}>
         <AppContextProvider>
           <GoogleMapsProvider>
-            {children}
+            <DeviceFrame>
+              {children}
+            </DeviceFrame>
           </GoogleMapsProvider>
         </AppContextProvider>
       </body>

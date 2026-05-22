@@ -24,7 +24,7 @@ Context:
 - Time: ${signals?.mealPeriod || 'unknown'} (${signals?.isWeekend ? 'weekend' : 'weekday'})
 - ${filtersStr}
 
-Write a compelling description (30 words max) that highlights why this spot fits what the user wants. Be specific and conversational. Do not use quotes or generic phrases.`;
+Write a compelling description (30 words max) that highlights why this spot fits what the user wants. Be specific and conversational. Do not use quotes or generic phrases. Do not mention the rating, star count, or review count — that information is already displayed separately.`;
 
   try {
     const response = await client.messages.create({

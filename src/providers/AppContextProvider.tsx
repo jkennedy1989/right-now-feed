@@ -42,6 +42,7 @@ interface AppState {
   isDynamicLoading: boolean;
   selectedBusinessId: string | null;
   showShortlistOnly: boolean;
+  searchOverride: string | null;
 }
 
 interface AppContextValue extends AppState {
@@ -59,6 +60,7 @@ interface AppContextValue extends AppState {
   onViewportChange: (center: { lat: number; lng: number }) => void;
   setLlmPrimaryPills: (pills: PrimaryFilterPill[]) => void;
   setLlmSecondaryPills: (pills: SecondaryFilterPill[]) => void;
+  setSearchOverride: (keyword: string | null) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -71,6 +73,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [searchOverride, setSearchOverride] = useState<string | null>(null);
   const [llmPrimaryPills, setLlmPrimaryPills] = useState<PrimaryFilterPill[]>([]);
   const [llmSecondaryPills, setLlmSecondaryPills] = useState<SecondaryFilterPill[]>([]);
   const [curatedPlaces, setCuratedPlaces] = useState<Business[]>(() => {
@@ -113,6 +116,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   );
 
   const searchKeyword = useMemo(() => {
+    if (searchOverride) return searchOverride;
     if (activePrimaryPills.length === 0) return null;
     const keywords = activePrimaryPills.slice(0, 3).map((p) => p.keyword);
     let combined = keywords.join(' ');
@@ -124,13 +128,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       combined = `${combined} ${secondaryKeywords.join(' ')}`;
     }
     return combined;
-  }, [activePrimaryPills, activeSecondaryIds, secondaryFilters]);
+  }, [searchOverride, activePrimaryPills, activeSecondaryIds, secondaryFilters]);
+
+  const isWalkableActive = activeSecondaryIds.includes('walkable');
 
   const { dynamicPlaces, isLoading: isDynamicLoading, onViewportChange } = useDynamicPlaces({
     viewportCenter,
     searchKeyword,
     selectedCity,
     curatedCount: curatedPlaces.length,
+    radiusOverride: isWalkableActive ? 1609 : undefined,
   });
 
   const places = useMemo(
@@ -170,6 +177,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     );
     setActiveSecondaryIds([]);
     setShowShortlistOnly(false);
+    setSearchOverride(null);
     setLlmSecondaryPills([]);
   }, []);
 
@@ -186,7 +194,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const shortlistItem = useCallback((id: string) => {
-    setShortlistIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setShortlistIds((prev) => {
+      if (prev.includes(id)) return prev;
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+      return [...prev, id];
+    });
   }, []);
 
   const unshortlistItem = useCallback((id: string) => {
@@ -225,6 +239,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     isDynamicLoading,
     selectedBusinessId,
     showShortlistOnly,
+    searchOverride,
     setCity,
     togglePrimary,
     toggleSecondary,
@@ -239,6 +254,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     onViewportChange,
     setLlmPrimaryPills,
     setLlmSecondaryPills,
+    setSearchOverride,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -5,6 +5,7 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { useBusinessDescription } from '@/hooks/useBusinessDescription';
 import { PhotoSlot } from '@/components/cards/PhotoSlot';
 import { CITIES } from '@/data/city-meta';
+import { formatPrice } from '@/lib/utils';
 import { X, Star, Bookmark } from 'lucide-react';
 
 
@@ -72,7 +73,7 @@ export function BusinessDetailCard() {
         </div>
 
         <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2.5">
-          <span>{business.priceLevel || '$$'}</span>
+          <span>{formatPrice(business.priceLevel)}</span>
           <span>•</span>
           <span className="text-green-600 font-medium">Open</span>
           {business.neighborhood && (
@@ -82,6 +83,13 @@ export function BusinessDetailCard() {
             </>
           )}
         </div>
+
+        {business.michelinStatus && (
+          <div className="flex items-center gap-1 mb-2">
+            <span className="text-xs">⭐</span>
+            <span className="text-xs font-semibold text-red-700">{business.michelinStatus}</span>
+          </div>
+        )}
 
         {descLoading ? (
           <div className="space-y-1.5 mb-3">

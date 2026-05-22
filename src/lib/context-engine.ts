@@ -276,11 +276,14 @@ export function getSecondaryPills(primaryPills: PrimaryFilterPill | PrimaryFilte
   const allGroups = new Set<SecondaryGroup>();
   pillArray.forEach((p) => p.secondaryGroups.forEach((g) => allGroups.add(g)));
 
-  const pills: SecondaryFilterPill[] = [];
+  const walkablePill = SECONDARY_POOLS.transit.find(p => p.id === 'walkable')!;
+  const pills: SecondaryFilterPill[] = [walkablePill];
+
   for (const group of allGroups) {
     const pool = SECONDARY_POOLS[group];
     if (pool) {
-      pills.push(...pickRandom(pool, 2));
+      const filtered = pool.filter(p => p.id !== 'walkable');
+      pills.push(...pickRandom(filtered, 2));
     }
   }
 
