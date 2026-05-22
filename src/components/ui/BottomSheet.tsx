@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { X, Bookmark, Trash2, Share2, BarChart3, Star } from 'lucide-react';
+import { X, Bookmark, Trash2, Share2, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Business } from '@/types';
 
@@ -110,12 +110,11 @@ export function BottomSheet({ isOpen, onClose }: BottomSheetProps) {
                 {shortlistedPlaces.length >= 2 && (
                   <button
                     onClick={() => setCompareMode(!compareMode)}
-                    className={`p-1.5 rounded-md transition-colors ${
+                    className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${
                       compareMode ? 'bg-brand-50 text-brand-600' : 'text-gray-500 hover:bg-gray-50'
                     }`}
-                    title="Compare"
                   >
-                    <BarChart3 size={16} />
+                    Compare
                   </button>
                 )}
                 {shortlistedPlaces.length > 0 && (
