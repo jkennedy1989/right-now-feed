@@ -145,18 +145,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     return keywords.join(' ');
   }, [searchOverride, activePrimaryPills]);
 
-  const isWalkableActive = activeSecondaryIds.includes('walkable');
-
   const { dynamicPlaces, isLoading: isDynamicLoading, onViewportChange } = useDynamicPlaces({
     viewportCenter,
     searchKeyword,
     selectedCity,
     curatedCount: curatedPlaces.length,
-    radiusOverride: isWalkableActive ? 1609 : undefined,
   });
 
   const activeSecondaryPills = useMemo(
-    () => secondaryFilters.filter((s) => activeSecondaryIds.includes(s.id) && s.id !== 'walkable'),
+    () => secondaryFilters.filter((s) => activeSecondaryIds.includes(s.id)),
     [secondaryFilters, activeSecondaryIds]
   );
 
@@ -167,9 +164,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       : merged;
     if (activeSecondaryPills.length === 0) return withInjected;
     return withInjected.filter((place) =>
-      activeSecondaryPills.every((pill) => matchesSecondaryFilter(place, pill))
+      activeSecondaryPills.every((pill) => matchesSecondaryFilter(place, pill, viewportCenter))
     );
-  }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills]);
+  }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills, viewportCenter]);
 
   useEffect(() => {
     setIsLoading(false);

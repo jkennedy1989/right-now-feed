@@ -1,10 +1,25 @@
 import { Business } from '@/types';
 import { SecondaryFilterPill } from '@/types/filters';
 
+const ONE_MILE_METERS = 1609;
 const PRICE_KEYWORDS = ['cheap', 'affordable', 'budget'];
 const HEALTHY_KEYWORDS = ['healthy', 'vegan', 'gluten free', 'salad', 'juice', 'fresh'];
 const INDULGENT_KEYWORDS = ['comfort', 'indulgent', 'dessert', 'sweet', 'pizza', 'tacos'];
 const SPEED_KEYWORDS = ['fast', 'quick', 'drive thru', 'counter service', 'street food'];
+
+function haversineDistance(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number }
+): number {
+  const R = 6371000;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const sinLat = Math.sin(dLat / 2);
+  const sinLng = Math.sin(dLng / 2);
+  const h = sinLat * sinLat + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * sinLng * sinLng;
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
 
 function textMatchesAny(text: string, keywords: string[]): boolean {
   const lower = text.toLowerCase();
@@ -22,7 +37,16 @@ function businessSearchableText(place: Business): string {
   ].join(' ').toLowerCase();
 }
 
-export function matchesSecondaryFilter(place: Business, pill: SecondaryFilterPill): boolean {
+export function matchesSecondaryFilter(
+  place: Business,
+  pill: SecondaryFilterPill,
+  viewportCenter?: { lat: number; lng: number } | null
+): boolean {
+  if (pill.id === 'walkable') {
+    if (!viewportCenter) return true;
+    return haversineDistance(viewportCenter, place.location) <= ONE_MILE_METERS;
+  }
+
   const group = pill.group;
   const pillKeywords = pill.keyword.toLowerCase().split(/\s+/);
   const searchable = businessSearchableText(place);

@@ -11,18 +11,16 @@ interface UseDynamicPlacesParams {
   searchKeyword: string | null;
   selectedCity: string;
   curatedCount: number;
-  radiusOverride?: number;
 }
 
-export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, curatedCount, radiusOverride }: UseDynamicPlacesParams) {
+export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, curatedCount }: UseDynamicPlacesParams) {
   const [dynamicPlaces, setDynamicPlaces] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFetchKey = useRef('');
 
   const fetchPlaces = useCallback(async (center: { lat: number; lng: number }, keyword?: string) => {
-    const radius = radiusOverride || TWO_MILES_METERS;
-    const fetchKey = `${center.lat.toFixed(3)}_${center.lng.toFixed(3)}_${keyword || ''}_${radius}`;
+    const fetchKey = `${center.lat.toFixed(3)}_${center.lng.toFixed(3)}_${keyword || ''}`;
     if (fetchKey === lastFetchKey.current) return;
     lastFetchKey.current = fetchKey;
 
@@ -31,7 +29,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
       const params = new URLSearchParams({
         lat: center.lat.toString(),
         lng: center.lng.toString(),
-        radius: radius.toString(),
+        radius: TWO_MILES_METERS.toString(),
         maxResults: '40',
       });
       if (keyword) params.set('keyword', keyword);
@@ -47,7 +45,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
     } finally {
       setIsLoading(false);
     }
-  }, [radiusOverride]);
+  }, []);
 
   // Keyword-triggered fetch
   useEffect(() => {
