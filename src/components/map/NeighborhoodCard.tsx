@@ -6,10 +6,10 @@ import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { WeatherTicker } from '@/components/header/WeatherTicker';
 
-interface EventItem {
+interface EventPlace {
   id: string;
   name: string;
-  timeStart: number;
+  location: { lat: number; lng: number };
 }
 
 const DISH_PATTERNS = [
@@ -61,7 +61,7 @@ export function NeighborhoodCard() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const [events, setEvents] = useState<EventPlace[]>([]);
   const [newOpenings, setNewOpenings] = useState<NewOpening[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
@@ -119,9 +119,17 @@ export function NeighborhoodCard() {
     eventsFetchedForCity.current = selectedCity;
 
     const center = CITIES[selectedCity].center;
-    fetch(`/api/yelp/events?lat=${center.lat}&lng=${center.lng}&limit=5`)
+    fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=8047&keyword=events+live+music+festival+tonight&maxResults=5`)
       .then((r) => r.json())
-      .then((data) => setEvents(Array.isArray(data) ? data.slice(0, 5) : []))
+      .then((data) => {
+        if (data.results && Array.isArray(data.results)) {
+          setEvents(data.results.slice(0, 5).map((p: { id: string; name: string; location: { lat: number; lng: number } }) => ({
+            id: p.id,
+            name: p.name,
+            location: p.location,
+          })));
+        }
+      })
       .catch(() => setEvents([]));
 
     fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=3219&keyword=new+restaurant+opening&maxResults=5`)
@@ -234,16 +242,17 @@ export function NeighborhoodCard() {
           {events.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <span>📅</span> Events today
+                <span>📅</span> Happening tonight
               </p>
-              <div className="space-y-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {events.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between">
-                    <span className="text-xs text-gray-700 truncate">{event.name}</span>
-                    <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">
-                      {new Date(event.timeStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                    </span>
-                  </div>
+                  <button
+                    key={event.id}
+                    onClick={() => handleNewOpeningClick(event)}
+                    className="px-2.5 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-colors"
+                  >
+                    {event.name}
+                  </button>
                 ))}
               </div>
             </div>

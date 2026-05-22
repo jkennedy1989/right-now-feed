@@ -17,6 +17,7 @@ import { CuratedBusiness } from '@/types/curated';
 import { curatedToBusiness } from '@/lib/utils';
 import { mergePlaces } from '@/lib/dedup';
 import { useDynamicPlaces } from '@/hooks/useDynamicPlaces';
+import { matchesSecondaryFilter } from '@/lib/secondary-filter';
 
 import laData from '@/data/la.json';
 import sfData from '@/data/sf.json';
@@ -131,16 +132,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     if (searchOverride) return searchOverride;
     if (activePrimaryPills.length === 0) return null;
     const keywords = activePrimaryPills.slice(0, 3).map((p) => p.keyword);
-    let combined = keywords.join(' ');
-    if (activeSecondaryIds.length > 0) {
-      const secondaryKeywords = activeSecondaryIds
-        .map((id) => secondaryFilters.find((s) => s.id === id)?.keyword)
-        .filter(Boolean)
-        .slice(0, 2);
-      combined = `${combined} ${secondaryKeywords.join(' ')}`;
-    }
-    return combined;
-  }, [searchOverride, activePrimaryPills, activeSecondaryIds, secondaryFilters]);
+    return keywords.join(' ');
+  }, [searchOverride, activePrimaryPills]);
 
   const isWalkableActive = activeSecondaryIds.includes('walkable');
 
@@ -152,10 +145,18 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     radiusOverride: isWalkableActive ? 1609 : undefined,
   });
 
-  const places = useMemo(
-    () => mergePlaces(curatedPlaces, dynamicPlaces),
-    [curatedPlaces, dynamicPlaces]
+  const activeSecondaryPills = useMemo(
+    () => secondaryFilters.filter((s) => activeSecondaryIds.includes(s.id) && s.id !== 'walkable'),
+    [secondaryFilters, activeSecondaryIds]
   );
+
+  const places = useMemo(() => {
+    const merged = mergePlaces(curatedPlaces, dynamicPlaces);
+    if (activeSecondaryPills.length === 0) return merged;
+    return merged.filter((place) =>
+      activeSecondaryPills.every((pill) => matchesSecondaryFilter(place, pill))
+    );
+  }, [curatedPlaces, dynamicPlaces, activeSecondaryPills]);
 
   useEffect(() => {
     setIsLoading(false);
