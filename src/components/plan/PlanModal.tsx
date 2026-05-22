@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { X, GripVertical, MapPin, Share2, Navigation } from 'lucide-react';
 import { Reorder } from 'framer-motion';
@@ -47,9 +47,19 @@ export function PlanModal({ isOpen, onClose }: PlanModalProps) {
     [places, shortlistIds]
   );
 
-  const [planItems, setPlanItems] = useState<PlanItem[]>(() =>
-    shortlistedPlaces.map((p) => ({ businessId: p.id, note: '' }))
-  );
+  const [planItems, setPlanItems] = useState<PlanItem[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPlanItems((prev) => {
+        const existingNotes = new Map(prev.map((item) => [item.businessId, item.note]));
+        return shortlistedPlaces.map((p) => ({
+          businessId: p.id,
+          note: existingNotes.get(p.id) || '',
+        }));
+      });
+    }
+  }, [isOpen, shortlistedPlaces]);
 
   const updateNote = (businessId: string, note: string) => {
     setPlanItems((prev) =>
