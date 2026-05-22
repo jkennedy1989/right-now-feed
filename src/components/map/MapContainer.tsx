@@ -142,6 +142,15 @@ function MapInner() {
       return places.filter((p) => savedSet.has(p.id));
     }
 
+    if (searchOverride) {
+      return places.filter((p) => p.source === 'google').slice(0, MAX_PINS);
+    }
+
+    if (selectedBusinessId && !hasActiveFilter) {
+      const selected = places.find((p) => p.id === selectedBusinessId);
+      return selected ? [selected] : [];
+    }
+
     if (!hasActiveFilter) {
       const curated = places.filter((p) => p.source === 'curated').slice(0, MAX_PINS);
       const remaining = MAX_PINS - curated.length;
@@ -155,7 +164,7 @@ function MapInner() {
     const dynamic = places.filter((p) => p.source === 'google');
     const curated = places.filter((p) => p.source === 'curated');
     return [...dynamic, ...curated].slice(0, MAX_PINS);
-  }, [places, hasActiveFilter, showShortlistOnly, shortlistIds]);
+  }, [places, hasActiveFilter, showShortlistOnly, shortlistIds, searchOverride, selectedBusinessId]);
 
   const handleMarkerClick = useCallback((business: Business) => {
     setSelectedBusinessId(business.id);
