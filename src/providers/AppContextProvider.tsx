@@ -19,6 +19,8 @@ import { curatedToBusiness } from '@/lib/utils';
 import { mergePlaces } from '@/lib/dedup';
 import { useDynamicPlaces } from '@/hooks/useDynamicPlaces';
 import { matchesSecondaryFilter } from '@/lib/secondary-filter';
+import { computeBadgeMap } from '@/lib/proof-badges';
+import { ProofBadge } from '@/types';
 
 import laData from '@/data/la.json';
 import sfData from '@/data/sf.json';
@@ -46,6 +48,7 @@ interface AppState {
   showShortlistOnly: boolean;
   searchOverride: string | null;
   pendingFitToResults: boolean;
+  badgeMap: Map<string, ProofBadge>;
 }
 
 interface AppContextValue extends AppState {
@@ -176,6 +179,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     return shortlistedMissing.length > 0 ? [...filtered, ...shortlistedMissing] : filtered;
   }, [curatedPlaces, dynamicPlaces, injectedPlaces, activeSecondaryPills, viewportCenter, shortlistIds]);
 
+  const badgeMap = useMemo(
+    () => computeBadgeMap(places, shortlistIds, selectedCity),
+    [places, shortlistIds, selectedCity]
+  );
+
   useEffect(() => {
     setIsLoading(false);
   }, []);
@@ -276,6 +284,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     showShortlistOnly,
     searchOverride,
     pendingFitToResults,
+    badgeMap,
     setCity,
     togglePrimary,
     toggleSecondary,

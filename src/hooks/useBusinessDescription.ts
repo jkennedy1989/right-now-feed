@@ -41,9 +41,12 @@ export function useBusinessDescription(
         business: {
           name: business.name,
           cuisine: business.cuisine,
+          category: business.category,
           rating: business.rating,
           neighborhood: business.neighborhood,
           hook: business.hook,
+          priceLevel: business.priceLevel,
+          attributes: business.attributes,
         },
         activeFilters,
         signals: {

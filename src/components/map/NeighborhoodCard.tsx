@@ -142,7 +142,7 @@ export function NeighborhoodCard() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] overflow-hidden max-h-[60vh] flex flex-col">
+    <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden max-h-[60vh] flex flex-col">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"

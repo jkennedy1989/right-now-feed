@@ -23,6 +23,7 @@ export function BusinessDetailCard() {
     activeSecondaryIds,
     secondaryFilters,
     signals,
+    badgeMap,
   } = useAppContext();
 
   const business = useMemo(
@@ -72,22 +73,22 @@ export function BusinessDetailCard() {
           <span className="text-xs text-gray-500">({business.reviewCount || 0} reviews)</span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2.5">
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-2">
           <span>{formatPrice(business.priceLevel)}</span>
           <span>•</span>
           <span className="text-green-600 font-medium">Open</span>
-          {business.neighborhood && (
+          {business.cuisine && (
             <>
               <span>•</span>
-              <span>{business.neighborhood}</span>
+              <span className="truncate">{business.cuisine}</span>
             </>
           )}
         </div>
 
-        {business.michelinStatus && (
-          <div className="flex items-center gap-1 mb-2">
-            <span className="text-xs">⭐</span>
-            <span className="text-xs font-semibold text-red-700">{business.michelinStatus}</span>
+        {badgeMap.get(business.id) && (
+          <div className="flex items-center gap-1.5 mb-2.5">
+            <span className="text-sm">{badgeMap.get(business.id)!.emoji}</span>
+            <span className="text-xs font-semibold text-gray-700">{badgeMap.get(business.id)!.detail || badgeMap.get(business.id)!.label}</span>
           </div>
         )}
 

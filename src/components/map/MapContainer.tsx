@@ -36,6 +36,7 @@ function MapInner() {
     pendingFitToResults,
     clearPendingFit,
     secondaryFilters,
+    badgeMap,
   } = useAppContext();
   const map = useMap();
   const { location: userLocation } = useGeolocation();
@@ -204,6 +205,7 @@ function MapInner() {
                 isActive={hasActiveFilter || isSelected}
                 pulse={isSelected}
                 small={isGoogle && !hasActiveFilter && !isSelected}
+                badge={badgeMap.get(place.id)}
               />
             </AdvancedMarker>
           );

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { ProofBadge } from '@/types';
 
 interface MarkerPinProps {
   emoji: string;
@@ -8,9 +9,10 @@ interface MarkerPinProps {
   isActive: boolean;
   pulse?: boolean;
   small?: boolean;
+  badge?: ProofBadge;
 }
 
-export function MarkerPin({ emoji, color, isActive, pulse, small }: MarkerPinProps) {
+export function MarkerPin({ emoji, color, isActive, pulse, small, badge }: MarkerPinProps) {
   return (
     <div className="relative flex items-center justify-center">
       {pulse && (
@@ -34,6 +36,15 @@ export function MarkerPin({ emoji, color, isActive, pulse, small }: MarkerPinPro
         className="absolute -bottom-1 w-2 h-2 rotate-45 border-b-2 border-r-2 border-white"
         style={{ backgroundColor: color }}
       />
+      {badge && (
+        <div className="absolute -top-1.5 -right-2 flex items-center px-1 py-0.5 bg-white rounded-full shadow-sm border border-gray-100 text-[9px] leading-none">
+          {badge.type === 'friend' && badge.friendInitial ? (
+            <span className="w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold">{badge.friendInitial}</span>
+          ) : (
+            <span>{badge.emoji}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

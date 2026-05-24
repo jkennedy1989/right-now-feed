@@ -12,19 +12,26 @@ export async function POST(req: NextRequest) {
 
   const filtersStr = activeFilters?.length > 0
     ? `The user is looking for: ${activeFilters.join(', ')}.`
-    : 'No specific filters active — the user is browsing nearby.';
+    : '';
 
-  const prompt = `You are a concise restaurant recommender. In 1-2 short sentences (maximum 30 words), explain why "${business.name}" is a great pick right now.
+  const prompt = `You are a hyper-local food insider. Write a single "know before you go" tip (max 35 words) for "${business.name}".
 
 Context:
 - Cuisine: ${business.cuisine || 'Unknown'}
-- Rating: ${business.rating || 'N/A'} stars
-- Neighborhood: ${business.neighborhood || 'Unknown'}
+- Style: ${business.category || 'Restaurant'}
+- Price: ${'$'.repeat(business.priceLevel || 2)}
 - Known for: ${business.hook || 'N/A'}
+- Has patio: ${business.attributes?.hasPatio || 'unknown'}
+- Reservations: ${business.attributes?.hasReservations || 'unknown'}
 - Time: ${signals?.mealPeriod || 'unknown'} (${signals?.isWeekend ? 'weekend' : 'weekday'})
-- ${filtersStr}
+${filtersStr ? `- ${filtersStr}` : ''}
 
-Write a compelling description (30 words max) that highlights why this spot fits what the user wants. Be specific and conversational. Do not use quotes or generic phrases. Do not mention the rating, star count, or review count — that information is already displayed separately.`;
+Write an actionable insider tip — something useful before visiting. Examples:
+- "Counter service only, order the birria tacos first"
+- "Expect a 20-min wait weekends, patio is dog-friendly"
+- "No reservations — put your name in on the waitlist app before arriving"
+
+Be specific, conversational, practical. No quotes around the tip. No generic praise. No rating mentions.`;
 
   try {
     const response = await client.messages.create({
