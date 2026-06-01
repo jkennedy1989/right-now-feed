@@ -178,7 +178,7 @@ function MapInner() {
       <Map
         defaultCenter={cityCenter}
         defaultZoom={DEFAULT_ZOOM}
-        mapId="right-now-feed-map"
+        mapId="6891744d9000b9738574e55f"
         colorScheme="LIGHT"
         gestureHandling="greedy"
         disableDefaultUI
