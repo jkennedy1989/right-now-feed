@@ -183,41 +183,41 @@ export function NeighborhoodCard() {
   }, []);
 
   return (
-    <div
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-all duration-300"
-    >
-      {/* Handle */}
-      <div className="w-full pt-2.5 pb-1 flex justify-center flex-shrink-0">
-        <div className="w-10 h-1 rounded-full bg-gray-300" />
-      </div>
-
-      {/* Header */}
-      <div className="px-4 pb-2 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-900">
-            {greeting} {city.name}
-          </h2>
-          {signals.weather && (
-            <div className="flex items-center gap-1 text-xs text-gray-600 font-medium flex-shrink-0 ml-2">
-              {signals.weather.condition === 'rain' ? <CloudRain size={14} className="text-blue-400" /> :
-               signals.weather.condition === 'clouds' ? <Cloud size={14} className="text-gray-400" /> :
-               signals.weather.condition === 'snow' ? <Snowflake size={14} className="text-blue-200" /> :
-               <Sun size={14} className="text-yellow-500" />}
-              <span>{Math.round(signals.weather.temp)}°F</span>
-            </div>
-          )}
+    <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-all duration-300">
+      {/* Handle + Header — draggable area */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none"
+      >
+        <div className="w-full pt-2.5 pb-1 flex justify-center">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
-        {summaryLoading ? (
-          <div className="mt-1">
-            <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-gray-900">
+              {greeting} {city.name}
+            </h2>
+            {signals.weather && (
+              <div className="flex items-center gap-1 text-xs text-gray-600 font-medium flex-shrink-0 ml-2">
+                {signals.weather.condition === 'rain' ? <CloudRain size={14} className="text-blue-400" /> :
+                 signals.weather.condition === 'clouds' ? <Cloud size={14} className="text-gray-400" /> :
+                 signals.weather.condition === 'snow' ? <Snowflake size={14} className="text-blue-200" /> :
+                 <Sun size={14} className="text-yellow-500" />}
+                <span>{Math.round(signals.weather.temp)}°F</span>
+              </div>
+            )}
           </div>
-        ) : blurb ? (
-          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
-        ) : null}
+          {summaryLoading ? (
+            <div className="mt-1">
+              <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
+            </div>
+          ) : blurb ? (
+            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
+          ) : null}
+        </div>
       </div>
 
       {/* Content — collapsed shows teaser of list carousel, expanded shows all */}
