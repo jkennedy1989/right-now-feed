@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Business } from '@/types';
 import { CITIES } from '@/data/city-meta';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Sun, Cloud, CloudRain, Snowflake } from 'lucide-react';
 import { getListsForCity } from '@/data/city-lists';
 import { PhotoSlot } from '@/components/cards/PhotoSlot';
@@ -35,24 +34,37 @@ function extractTrendingDishes(hooks: string[]): string[] {
   return dishes.slice(0, 6);
 }
 
+type CardState = 'collapsed' | 'peek' | 'expanded';
+
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView, activePrimaryIds } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView, activePrimaryIds, showRedoButton } = useAppContext();
   const city = CITIES[selectedCity];
-  const [isExpanded, setIsExpanded] = useState<'lists' | 'full' | false>('lists');
+  const [cardState, setCardState] = useState<CardState>('peek');
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [events, setEvents] = useState<{ id: string; title: string; start: string; venueName: string; category: string }[]>([]);
   const [newOpenings, setNewOpenings] = useState<Business[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
+  // Collapse when filter selected or map interacted
   useEffect(() => {
     if (activePrimaryIds.length > 0) {
-      setIsExpanded(false);
-    } else {
-      setIsExpanded('lists');
+      setCardState('collapsed');
     }
   }, [activePrimaryIds.length]);
+
+  useEffect(() => {
+    if (showRedoButton) {
+      setCardState('collapsed');
+    }
+  }, [showRedoButton]);
+
+  // Reset to peek on city change
+  useEffect(() => {
+    setCardState('peek');
+  }, [selectedCity]);
 
   const isNight = signals.daylight === 'night';
   const greeting = isNight ? 'Tonight in' : 'Today in';
@@ -106,7 +118,7 @@ export function NeighborhoodCard() {
   }, [selectedCity, topCuisines, trendingDishes, city.name, signals]);
 
   useEffect(() => {
-    if (!isExpanded || eventsFetchedForCity.current === selectedCity) return;
+    if (cardState === 'collapsed' || eventsFetchedForCity.current === selectedCity) return;
     eventsFetchedForCity.current = selectedCity;
 
     const center = CITIES[selectedCity].center;
@@ -127,29 +139,50 @@ export function NeighborhoodCard() {
         }
       })
       .catch(() => setNewOpenings([]));
-  }, [isExpanded, selectedCity]);
+  }, [cardState, selectedCity]);
 
   const blurb = aiSummary || city.foodCultureSummary?.slice(0, 60) || '';
 
   const handleChipClick = (keyword: string) => {
     setSearchOverride(keyword);
-    setIsExpanded(false);
+    setCardState('collapsed');
   };
 
   const handlePlaceClick = (place: Business) => {
     injectPlace(place);
     setSelectedBusinessId(place.id);
     setViewportCenter(place.location);
-    setIsExpanded(false);
+    setCardState('collapsed');
   };
 
+  const handleHandleClick = useCallback(() => {
+    if (cardState === 'collapsed') setCardState('peek');
+    else if (cardState === 'peek') setCardState('expanded');
+    else setCardState('peek');
+  }, [cardState]);
+
+  // Scroll-to-expand: when in peek state, scrolling down expands to full
+  const handleScroll = useCallback(() => {
+    if (cardState === 'peek' && contentRef.current) {
+      if (contentRef.current.scrollTop > 5) {
+        setCardState('expanded');
+      }
+    }
+  }, [cardState]);
+
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden max-h-[60vh] flex flex-col">
+    <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-all duration-300">
+      {/* Handle */}
       <button
-        onClick={() => setIsExpanded(isExpanded === 'full' ? 'lists' : 'full')}
-        className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"
+        onClick={handleHandleClick}
+        className="w-full pt-2 pb-1 flex justify-center flex-shrink-0"
       >
-        <div className="flex-1 min-w-0">
+        <div className="w-10 h-1 rounded-full bg-gray-300" />
+      </button>
+
+      {/* Header — always visible */}
+      {cardState !== 'collapsed' && (
+        <div className="px-4 pb-2 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-gray-900">
               {greeting} {city.name}
@@ -164,32 +197,30 @@ export function NeighborhoodCard() {
               </div>
             )}
           </div>
-          {!isExpanded && (
-            summaryLoading ? (
-              <div className="mt-1 space-y-1">
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
-              </div>
-            ) : (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
-            )
-          )}
+          {summaryLoading ? (
+            <div className="mt-1">
+              <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
+            </div>
+          ) : blurb ? (
+            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
+          ) : null}
         </div>
-        <div className="ml-3 flex-shrink-0">
-          {isExpanded === 'full' ? (
-            <ChevronUp size={16} className="text-gray-400" />
-          ) : (
-            <ChevronDown size={16} className="text-gray-400" />
-          )}
-        </div>
-      </button>
+      )}
 
-      {isExpanded && (
-        <div className={`px-4 pb-4 animate-[slideUp_200ms_ease-out] ${isExpanded === 'full' ? 'overflow-y-auto flex-1 min-h-0' : ''}`}>
-          {blurb && <p className="text-xs text-gray-500 mb-3">{blurb}</p>}
-
-          {/* Local Lists — always shown when expanded */}
+      {/* Content */}
+      {cardState !== 'collapsed' && (
+        <div
+          ref={contentRef}
+          onScroll={handleScroll}
+          className={`px-4 pb-3 transition-all duration-300 ${
+            cardState === 'expanded'
+              ? 'max-h-[50vh] overflow-y-auto'
+              : 'max-h-[60px] overflow-hidden'
+          }`}
+        >
+          {/* Local Lists */}
           {cityLists.length > 0 && (
-            <div className={isExpanded === 'full' ? 'mb-3' : ''}>
+            <div className={cardState === 'expanded' ? 'mb-3' : ''}>
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>📋</span> Local lists
               </p>
@@ -197,7 +228,7 @@ export function NeighborhoodCard() {
                 {cityLists.map((list) => (
                   <button
                     key={list.id}
-                    onClick={() => { enterListView(list.id); setIsExpanded(false); }}
+                    onClick={() => { enterListView(list.id); setCardState('collapsed'); }}
                     className="flex-shrink-0 w-[160px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left flex flex-col"
                   >
                     <div className="h-[72px] w-full flex-shrink-0">
@@ -213,7 +244,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {isExpanded === 'full' && topCuisines.length > 0 && (
+          {cardState === 'expanded' && topCuisines.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>🍽️</span> Popular cuisines
@@ -232,7 +263,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {isExpanded === 'full' && trendingDishes.length > 0 && (
+          {cardState === 'expanded' && trendingDishes.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>🔥</span> Trending dishes
@@ -251,7 +282,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {isExpanded === 'full' && newOpenings.length > 0 && (
+          {cardState === 'expanded' && newOpenings.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>✨</span> New openings
@@ -270,7 +301,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {isExpanded === 'full' && events.length > 0 && (
+          {cardState === 'expanded' && events.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <span>📅</span> Upcoming events
