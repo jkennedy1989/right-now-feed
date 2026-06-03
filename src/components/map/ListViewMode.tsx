@@ -122,7 +122,7 @@ export function ListViewMode() {
                     )}
                   </div>
                   {biz.hook && (
-                    <p className="text-xs text-gray-600">{biz.hook}</p>
+                    <p className="text-xs text-gray-600">{biz.hook.length > 120 ? biz.hook.slice(0, 120) + '...' : biz.hook}</p>
                   )}
                 </div>
               </div>
