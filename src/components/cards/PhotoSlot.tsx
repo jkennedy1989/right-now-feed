@@ -7,14 +7,17 @@ interface PhotoSlotProps {
   city: string;
   className?: string;
   fallbackEmoji?: string;
+  index?: number;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
-export function PhotoSlot({ name, city, className = '', fallbackEmoji = '🍽️' }: PhotoSlotProps) {
+export function PhotoSlot({ name, city, className = '', fallbackEmoji = '🍽️', index = 0, onLoad, onError }: PhotoSlotProps) {
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const containerRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
-  const src = `/api/place-photo?name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
+  const src = `/api/place-photo?name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}&index=${index}`;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -41,8 +44,8 @@ export function PhotoSlot({ name, city, className = '', fallbackEmoji = '🍽️
           src={src}
           alt={name}
           className={`w-full h-full object-cover transition-opacity duration-300 ${state === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => setState('loaded')}
-          onError={() => setState('error')}
+          onLoad={() => { setState('loaded'); onLoad?.(); }}
+          onError={() => { setState('error'); onError?.(); }}
         />
       )}
       {(state === 'loading' || !visible) && (

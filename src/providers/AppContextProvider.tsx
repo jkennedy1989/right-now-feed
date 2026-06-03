@@ -21,6 +21,7 @@ import { useDynamicPlaces } from '@/hooks/useDynamicPlaces';
 import { matchesSecondaryFilter } from '@/lib/secondary-filter';
 import { computeBadgeMap } from '@/lib/proof-badges';
 import { ProofBadge } from '@/types';
+import { CITY_LISTS, CityList } from '@/data/city-lists';
 
 import laData from '@/data/la.json';
 import sfData from '@/data/sf.json';
@@ -31,6 +32,14 @@ const CITY_DATA: Record<CityId, CuratedBusiness[]> = {
   sf: sfData as CuratedBusiness[],
   toronto: torontoData as CuratedBusiness[],
 };
+
+interface ListViewState {
+  listId: string;
+  list: CityList;
+  businesses: Business[];
+  activeIndex: number;
+  isLoading: boolean;
+}
 
 interface AppState {
   selectedCity: CityId;
@@ -49,6 +58,9 @@ interface AppState {
   searchOverride: string | null;
   pendingFitToResults: boolean;
   badgeMap: Map<string, ProofBadge>;
+  showRedoButton: boolean;
+  hasUserInteracted: boolean;
+  listViewMode: ListViewState | null;
 }
 
 interface AppContextValue extends AppState {
@@ -63,12 +75,16 @@ interface AppContextValue extends AppState {
   toggleShortlistView: () => void;
   setSelectedBusinessId: (id: string | null) => void;
   setViewportCenter: (center: { lat: number; lng: number }) => void;
-  onViewportChange: (center: { lat: number; lng: number }) => void;
+  onMapUserPan: (center: { lat: number; lng: number }) => void;
+  triggerRedoSearch: () => void;
   setLlmPrimaryPills: (pills: PrimaryFilterPill[]) => void;
   setLlmSecondaryPills: (pills: SecondaryFilterPill[]) => void;
   setSearchOverride: (keyword: string | null) => void;
   clearPendingFit: () => void;
   injectPlace: (place: Business) => void;
+  enterListView: (listId: string) => void;
+  exitListView: () => void;
+  setListActiveIndex: (index: number) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -83,10 +99,15 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [searchOverride, setSearchOverrideRaw] = useState<string | null>(null);
   const [pendingFitToResults, setPendingFitToResults] = useState(false);
+  const [showRedoButton, setShowRedoButton] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [pendingRedoCenter, setPendingRedoCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [listViewMode, setListViewMode] = useState<ListViewState | null>(null);
 
   const setSearchOverride = useCallback((keyword: string | null) => {
     setSearchOverrideRaw(keyword);
     if (keyword) setPendingFitToResults(true);
+    setShowRedoButton(false);
   }, []);
 
   const clearPendingFit = useCallback(() => {
@@ -147,11 +168,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const searchKeyword = useMemo(() => {
     if (searchOverride) return searchOverride;
     if (activePrimaryPills.length === 0) return null;
-    const keywords = activePrimaryPills.slice(0, 3).map((p) => p.keyword);
-    return keywords.join(' ');
+    return activePrimaryPills[0].keyword;
   }, [searchOverride, activePrimaryPills]);
 
-  const { dynamicPlaces, isLoading: isDynamicLoading, onViewportChange } = useDynamicPlaces({
+  const { dynamicPlaces, isLoading: isDynamicLoading, redoSearch } = useDynamicPlaces({
     viewportCenter,
     searchKeyword,
     selectedCity,
@@ -206,19 +226,24 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setSelectedBusinessId(null);
     setLlmPrimaryPills([]);
     setLlmSecondaryPills([]);
+    setShowRedoButton(false);
+    setHasUserInteracted(false);
+    setListViewMode(null);
     const curated = CITY_DATA[city];
     setCuratedPlaces(curated.map((c) => curatedToBusiness(c)));
   }, []);
 
   const togglePrimary = useCallback((id: string) => {
     setActivePrimaryIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? [] : [id]
     );
     setActiveSecondaryIds([]);
     setShowShortlistOnly(false);
     setSearchOverride(null);
     setLlmSecondaryPills([]);
-  }, []);
+    setHasUserInteracted(true);
+    setShowRedoButton(false);
+  }, [setSearchOverride]);
 
   const toggleSecondary = useCallback((id: string) => {
     setActiveSecondaryIds((prev) =>
@@ -268,6 +293,56 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }
   }, [showShortlistOnly]);
 
+  const onMapUserPan = useCallback((center: { lat: number; lng: number }) => {
+    setPendingRedoCenter(center);
+    setShowRedoButton(true);
+  }, []);
+
+  const triggerRedoSearch = useCallback(() => {
+    if (pendingRedoCenter) {
+      redoSearch(pendingRedoCenter, searchKeyword || undefined);
+      setShowRedoButton(false);
+      setHasUserInteracted(true);
+    }
+  }, [pendingRedoCenter, redoSearch, searchKeyword]);
+
+  const enterListView = useCallback((listId: string) => {
+    const list = CITY_LISTS.find((l) => l.id === listId);
+    if (!list) return;
+
+    setActivePrimaryIds([]);
+    setActiveSecondaryIds([]);
+    setSearchOverrideRaw(null);
+    setSelectedBusinessId(null);
+    setShowShortlistOnly(false);
+    setShowRedoButton(false);
+
+    setListViewMode({ listId, list, businesses: [], activeIndex: 0, isLoading: true });
+
+    fetch('/api/list-places', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ names: list.businesses.map((b) => b.name), city: CITIES[selectedCity].name, descriptions: list.businesses.map((b) => b.description) }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.results && Array.isArray(data.results)) {
+          setListViewMode((prev) => prev ? { ...prev, businesses: data.results, isLoading: false } : null);
+        }
+      })
+      .catch(() => {
+        setListViewMode((prev) => prev ? { ...prev, isLoading: false } : null);
+      });
+  }, [selectedCity]);
+
+  const exitListView = useCallback(() => {
+    setListViewMode(null);
+  }, []);
+
+  const setListActiveIndex = useCallback((index: number) => {
+    setListViewMode((prev) => prev ? { ...prev, activeIndex: index } : null);
+  }, []);
+
   const value: AppContextValue = {
     selectedCity,
     signals,
@@ -285,6 +360,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     searchOverride,
     pendingFitToResults,
     badgeMap,
+    showRedoButton,
+    hasUserInteracted,
+    listViewMode,
     setCity,
     togglePrimary,
     toggleSecondary,
@@ -296,12 +374,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     toggleShortlistView,
     setSelectedBusinessId,
     setViewportCenter,
-    onViewportChange,
+    onMapUserPan,
+    triggerRedoSearch,
     setLlmPrimaryPills,
     setLlmSecondaryPills,
     setSearchOverride,
     clearPendingFit,
     injectPlace,
+    enterListView,
+    exitListView,
+    setListActiveIndex,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

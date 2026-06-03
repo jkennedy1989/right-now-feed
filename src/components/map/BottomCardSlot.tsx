@@ -3,10 +3,19 @@
 import { useAppContext } from '@/providers/AppContextProvider';
 import { NeighborhoodCard } from './NeighborhoodCard';
 import { BusinessDetailCard } from './BusinessDetailCard';
+import { ListViewMode } from './ListViewMode';
 import { FilterPillBar } from '@/components/filters/FilterPillBar';
 
 export function BottomCardSlot() {
-  const { selectedBusinessId } = useAppContext();
+  const { selectedBusinessId, listViewMode } = useAppContext();
+
+  if (listViewMode) {
+    return (
+      <div className="absolute bottom-4 left-0 right-0 z-20">
+        <ListViewMode />
+      </div>
+    );
+  }
 
   if (selectedBusinessId) {
     return (

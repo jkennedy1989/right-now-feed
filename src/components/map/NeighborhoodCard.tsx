@@ -5,7 +5,8 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { Business } from '@/types';
 import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { WeatherTicker } from '@/components/header/WeatherTicker';
+import { getListsForCity } from '@/data/city-lists';
+import { PhotoSlot } from '@/components/cards/PhotoSlot';
 
 const DISH_PATTERNS = [
   /known for (?:the |its )?(.*?)(?:\.|,|$)/i,
@@ -33,19 +34,8 @@ function extractTrendingDishes(hooks: string[]): string[] {
   return dishes.slice(0, 6);
 }
 
-function getTimeGreeting(hour: number): string {
-  return hour >= 17 ? 'Tonight in' : 'Today in';
-}
-
-function getTimeEmoji(hour: number): string {
-  if (hour >= 21 || hour < 5) return '🌙';
-  if (hour >= 17) return '🌙';
-  if (hour >= 12) return '☀️';
-  return '🌤️';
-}
-
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
@@ -54,7 +44,11 @@ export function NeighborhoodCard() {
   const [newOpenings, setNewOpenings] = useState<Business[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
-  const hour = new Date().getHours();
+
+  const isNight = signals.daylight === 'night';
+  const greeting = isNight ? 'Tonight in' : 'Today in';
+
+  const cityLists = useMemo(() => getListsForCity(selectedCity), [selectedCity]);
 
   const { topCuisines, trendingDishes } = useMemo(() => {
     const cuisineCounts: Record<string, number> = {};
@@ -94,14 +88,13 @@ export function NeighborhoodCard() {
         trendingDishes,
         mealPeriod: signals?.mealPeriod,
         isWeekend: signals?.isWeekend,
-        hour,
       }),
     })
       .then((r) => r.json())
       .then((data) => setAiSummary(data.summary || ''))
       .catch(() => setAiSummary(''))
       .finally(() => setSummaryLoading(false));
-  }, [selectedCity, topCuisines, trendingDishes, city.name, signals, hour]);
+  }, [selectedCity, topCuisines, trendingDishes, city.name, signals]);
 
   useEffect(() => {
     if (!isExpanded || eventsFetchedForCity.current === selectedCity) return;
@@ -127,7 +120,7 @@ export function NeighborhoodCard() {
       .catch(() => setNewOpenings([]));
   }, [isExpanded, selectedCity]);
 
-  const blurb = aiSummary || "Here's what locals are visiting and ordering right now.";
+  const blurb = aiSummary || city.foodCultureSummary?.slice(0, 60) || '';
 
   const handleChipClick = (keyword: string) => {
     setSearchOverride(keyword);
@@ -148,25 +141,18 @@ export function NeighborhoodCard() {
         className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-base">{getTimeEmoji(hour)}</span>
-              <h2 className="text-sm font-bold text-gray-900">
-                {getTimeGreeting(hour)} {city.name}
-              </h2>
-            </div>
-            <div className="flex-shrink-0 ml-2">
-              <WeatherTicker />
-            </div>
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-sm font-bold text-gray-900">
+              {greeting} {city.name}
+            </h2>
           </div>
           {!isExpanded && (
             summaryLoading ? (
               <div className="mt-1 space-y-1">
                 <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
               </div>
             ) : (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{blurb}</p>
+              <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
             )
           )}
         </div>
@@ -181,7 +167,33 @@ export function NeighborhoodCard() {
 
       {isExpanded && (
         <div className="px-4 pb-4 animate-[slideUp_200ms_ease-out] overflow-y-auto flex-1 min-h-0">
-          <p className="text-xs text-gray-500 mb-3">{blurb}</p>
+          {blurb && <p className="text-xs text-gray-500 mb-3">{blurb}</p>}
+
+          {/* Local Lists */}
+          {cityLists.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <span>📋</span> Local lists
+              </p>
+              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+                {cityLists.map((list) => (
+                  <button
+                    key={list.id}
+                    onClick={() => { enterListView(list.id); setIsExpanded(false); }}
+                    className="flex-shrink-0 w-[140px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left"
+                  >
+                    <div className="h-16 w-full">
+                      <PhotoSlot name={list.businesses[0].name} city={city.name} className="h-full w-full" />
+                    </div>
+                    <div className="p-2">
+                      <p className="text-[11px] font-semibold text-gray-900 line-clamp-1">{list.emoji} {list.title}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">{list.businesses.length} spots · {list.source}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {topCuisines.length > 0 && (
             <div className="mb-3">

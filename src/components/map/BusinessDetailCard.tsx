@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { useBusinessDescription } from '@/hooks/useBusinessDescription';
 import { PhotoSlot } from '@/components/cards/PhotoSlot';
@@ -44,15 +44,78 @@ export function BusinessDetailCard() {
     signals
   );
 
+  const [activePhoto, setActivePhoto] = useState(0);
+  const [loadedPhotos, setLoadedPhotos] = useState<Set<number>>(new Set());
+  const touchStartX = useRef<number | null>(null);
+
+  const handlePhotoLoad = useCallback((index: number) => {
+    setLoadedPhotos((prev) => new Set(prev).add(index));
+  }, []);
+
+  const handlePhotoError = useCallback((_index: number) => {
+    // Photo at this index failed - don't add to loaded set
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(diff) < 40) return;
+
+    const sortedLoaded = Array.from(loadedPhotos).sort();
+    const currentIdx = sortedLoaded.indexOf(activePhoto);
+    if (diff > 0 && currentIdx < sortedLoaded.length - 1) {
+      setActivePhoto(sortedLoaded[currentIdx + 1]);
+    } else if (diff < 0 && currentIdx > 0) {
+      setActivePhoto(sortedLoaded[currentIdx - 1]);
+    }
+  }, [activePhoto, loadedPhotos]);
+
   if (!business) return null;
 
   const shortlisted = isShortlisted(business.id);
+  const cityName = CITIES[selectedCity].name;
+  const photoCount = loadedPhotos.size;
 
   return (
     <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.1)] overflow-hidden animate-[slideUp_250ms_ease-out]">
       <div className="relative">
-        <div className="h-32 w-full">
-          <PhotoSlot name={business.name} city={CITIES[selectedCity].name} className="h-full w-full" />
+        <div
+          className="h-32 w-full overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div
+            className="flex h-full transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${activePhoto * 100}%)` }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-full h-full flex-shrink-0">
+                <PhotoSlot
+                  name={business.name}
+                  city={cityName}
+                  index={i}
+                  className="h-full w-full"
+                  onLoad={() => handlePhotoLoad(i)}
+                  onError={() => handlePhotoError(i)}
+                />
+              </div>
+            ))}
+          </div>
+          {photoCount > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {Array.from(loadedPhotos).sort().map((i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activePhoto ? 'bg-white' : 'bg-white/50'}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <button
           onClick={() => setSelectedBusinessId(null)}

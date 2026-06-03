@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     ? `The user is looking for: ${activeFilters.join(', ')}.`
     : '';
 
-  const prompt = `You are a hyper-local food insider. Write a single "know before you go" tip (max 35 words) for "${business.name}".
+  const prompt = `Write 3 short lines (total max 40 words) about "${business.name}":
+1. What to order (1-2 popular dishes)
+2. The vibe in a few words
+3. One practical "know before you go" tip
 
 Context:
 - Cuisine: ${business.cuisine || 'Unknown'}
@@ -26,17 +29,12 @@ Context:
 - Time: ${signals?.mealPeriod || 'unknown'} (${signals?.isWeekend ? 'weekend' : 'weekday'})
 ${filtersStr ? `- ${filtersStr}` : ''}
 
-Write an actionable insider tip — something useful before visiting. Examples:
-- "Counter service only, order the birria tacos first"
-- "Expect a 20-min wait weekends, patio is dog-friendly"
-- "No reservations — put your name in on the waitlist app before arriving"
-
-Be specific, conversational, practical. No quotes around the tip. No generic praise. No rating mentions.`;
+No quotes, no numbering, no labels. Just the content, one line per point. Be specific and practical.`;
 
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 150,
+      max_tokens: 120,
       messages: [{ role: 'user', content: prompt }],
     });
 

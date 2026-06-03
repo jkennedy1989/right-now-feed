@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Business } from '@/types';
 
 const TWO_MILES_METERS = 3219;
-const DEBOUNCE_MS = 500;
 
 interface UseDynamicPlacesParams {
   viewportCenter: { lat: number; lng: number } | null;
@@ -16,7 +15,6 @@ interface UseDynamicPlacesParams {
 export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, curatedCount }: UseDynamicPlacesParams) {
   const [dynamicPlaces, setDynamicPlaces] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFetchKey = useRef('');
 
   const fetchPlaces = useCallback(async (center: { lat: number; lng: number }, keyword?: string) => {
@@ -47,7 +45,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
     }
   }, []);
 
-  // Keyword-triggered fetch
+  // Keyword-triggered fetch (auto-fetches on filter/search change)
   useEffect(() => {
     if (!viewportCenter) return;
 
@@ -64,17 +62,11 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
     fetchPlaces(viewportCenter, searchKeyword);
   }, [viewportCenter, searchKeyword, fetchPlaces, curatedCount]);
 
-  // Viewport-triggered fetch (debounced)
-  const onViewportChange = useCallback((center: { lat: number; lng: number }) => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      if (!searchKeyword && curatedCount < 40) {
-        fetchPlaces(center, 'restaurant');
-      } else if (searchKeyword) {
-        fetchPlaces(center, searchKeyword);
-      }
-    }, DEBOUNCE_MS);
-  }, [searchKeyword, fetchPlaces, curatedCount]);
+  // Manual redo search (called when user taps "Redo search in this area")
+  const redoSearch = useCallback((center: { lat: number; lng: number }, keyword?: string) => {
+    lastFetchKey.current = '';
+    fetchPlaces(center, keyword || 'restaurant');
+  }, [fetchPlaces]);
 
   // Reset on city change
   useEffect(() => {
@@ -82,5 +74,5 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
     lastFetchKey.current = '';
   }, [selectedCity]);
 
-  return { dynamicPlaces, isLoading, onViewportChange };
+  return { dynamicPlaces, isLoading, redoSearch };
 }
