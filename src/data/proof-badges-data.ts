@@ -56,7 +56,7 @@ export const TOP_50_BEST: string[] = [
 ];
 
 export const MOCK_FRIENDS = [
-  { name: 'Alex', initial: 'A' },
-  { name: 'Jordan', initial: 'J' },
-  { name: 'Sam', initial: 'S' },
+  { name: 'Alex', initial: 'A', avatar: 'https://i.pravatar.cc/40?img=12' },
+  { name: 'Jordan', initial: 'J', avatar: 'https://i.pravatar.cc/40?img=33' },
+  { name: 'Sam', initial: 'S', avatar: 'https://i.pravatar.cc/40?img=47' },
 ];

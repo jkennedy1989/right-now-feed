@@ -41,8 +41,8 @@ export function MarkerPin({ emoji, color, isActive, pulse, small, badge, label, 
         />
         {badge && (
           <div className="absolute -top-1.5 -right-2 flex items-center px-1 py-0.5 bg-white rounded-full shadow-sm border border-gray-100 text-[9px] leading-none">
-            {badge.type === 'friend' && badge.friendInitial ? (
-              <span className="w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold">{badge.friendInitial}</span>
+            {badge.type === 'friend' && badge.friendAvatar ? (
+              <img src={badge.friendAvatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
             ) : (
               <span>{badge.emoji}</span>
             )}

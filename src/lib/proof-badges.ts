@@ -90,6 +90,7 @@ export function computeBadgeMap(
       emoji: '👤',
       label: `${friend.name} liked this`,
       friendInitial: friend.initial,
+      friendAvatar: friend.avatar,
     });
     assignedIds.add(place.id);
   }

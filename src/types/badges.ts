@@ -6,4 +6,5 @@ export interface ProofBadge {
   label: string;
   detail?: string;
   friendInitial?: string;
+  friendAvatar?: string;
 }

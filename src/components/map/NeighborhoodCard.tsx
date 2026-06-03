@@ -38,7 +38,7 @@ function extractTrendingDishes(hooks: string[]): string[] {
 export function NeighborhoodCard() {
   const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView } = useAppContext();
   const city = CITIES[selectedCity];
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [events, setEvents] = useState<{ id: string; title: string; start: string; venueName: string; category: string }[]>([]);
@@ -185,17 +185,17 @@ export function NeighborhoodCard() {
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>📋</span> Local lists
               </p>
-              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+              <div className="flex items-stretch gap-2.5 overflow-x-auto scrollbar-hide pb-1">
                 {cityLists.map((list) => (
                   <button
                     key={list.id}
                     onClick={() => { enterListView(list.id); setIsExpanded(false); }}
-                    className="flex-shrink-0 w-[160px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left"
+                    className="flex-shrink-0 w-[160px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left flex flex-col"
                   >
-                    <div className="h-[72px] w-full">
+                    <div className="h-[72px] w-full flex-shrink-0">
                       <PhotoSlot name={list.businesses[0].name} city={city.name} className="h-full w-full" />
                     </div>
-                    <div className="p-2">
+                    <div className="p-2 flex-1 flex flex-col justify-between">
                       <p className="text-[11px] font-semibold text-gray-900">{list.emoji} {list.title}</p>
                       <p className="text-[10px] text-gray-500 mt-0.5">{list.businesses.length} spots · {list.source}</p>
                     </div>
