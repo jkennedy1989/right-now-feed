@@ -303,10 +303,10 @@ function MapInner() {
       </Map>
 
       {showRedoButton && !listViewMode && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
+        <div className="absolute top-[56px] left-1/2 -translate-x-1/2 z-30 mt-2">
           <button
             onClick={triggerRedoSearch}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full shadow-lg text-xs font-medium text-gray-700 border border-gray-200 whitespace-nowrap hover:bg-gray-50 active:bg-gray-100 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.06)] text-xs font-medium text-gray-700 whitespace-nowrap hover:bg-white/80 active:bg-white/90 transition-all"
           >
             <RefreshCw size={14} className="text-gray-500" />
             <span>Redo search in this area</span>
