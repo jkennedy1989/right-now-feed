@@ -11,7 +11,7 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { Locate, RefreshCw } from 'lucide-react';
 
 const DEFAULT_ZOOM = 14;
-const MAX_PINS = 40;
+const MAX_PINS = 15;
 const INITIAL_PIN_CAP = 10;
 
 function getCuisineEmoji(cuisine: string): string {
@@ -205,8 +205,7 @@ function MapInner() {
     }
 
     const dynamic = places.filter((p) => p.source === 'google');
-    const curated = places.filter((p) => p.source === 'curated');
-    return [...dynamic, ...curated].slice(0, pinCap);
+    return dynamic.slice(0, pinCap);
   }, [places, hasActiveFilter, showShortlistOnly, shortlistIds, searchOverride, selectedBusinessId, hasUserInteracted, listViewMode]);
 
   // Compute which pins get labels (top 4 closest to viewport + selected)
