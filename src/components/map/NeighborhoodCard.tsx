@@ -221,7 +221,7 @@ export function NeighborhoodCard() {
               <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
             </div>
           ) : blurb ? (
-            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{blurb}</p>
+            <p className="text-xs text-gray-500 mt-1">{blurb}</p>
           ) : null}
         </div>
       </div>
