@@ -5,6 +5,7 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { Business } from '@/types';
 import { CITIES } from '@/data/city-meta';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Sun, Cloud, CloudRain, Snowflake } from 'lucide-react';
 import { getListsForCity } from '@/data/city-lists';
 import { PhotoSlot } from '@/components/cards/PhotoSlot';
 
@@ -141,10 +142,19 @@ export function NeighborhoodCard() {
         className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-gray-900">
               {greeting} {city.name}
             </h2>
+            {signals.weather && (
+              <div className="flex items-center gap-1 text-xs text-gray-600 font-medium flex-shrink-0 ml-2">
+                {signals.weather.condition === 'rain' ? <CloudRain size={14} className="text-blue-400" /> :
+                 signals.weather.condition === 'clouds' ? <Cloud size={14} className="text-gray-400" /> :
+                 signals.weather.condition === 'snow' ? <Snowflake size={14} className="text-blue-200" /> :
+                 <Sun size={14} className="text-yellow-500" />}
+                <span>{Math.round(signals.weather.temp)}°F</span>
+              </div>
+            )}
           </div>
           {!isExpanded && (
             summaryLoading ? (
@@ -180,13 +190,13 @@ export function NeighborhoodCard() {
                   <button
                     key={list.id}
                     onClick={() => { enterListView(list.id); setIsExpanded(false); }}
-                    className="flex-shrink-0 w-[140px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left"
+                    className="flex-shrink-0 w-[160px] bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow text-left"
                   >
-                    <div className="h-16 w-full">
+                    <div className="h-[72px] w-full">
                       <PhotoSlot name={list.businesses[0].name} city={city.name} className="h-full w-full" />
                     </div>
                     <div className="p-2">
-                      <p className="text-[11px] font-semibold text-gray-900 line-clamp-1">{list.emoji} {list.title}</p>
+                      <p className="text-[11px] font-semibold text-gray-900">{list.emoji} {list.title}</p>
                       <p className="text-[10px] text-gray-500 mt-0.5">{list.businesses.length} spots · {list.source}</p>
                     </div>
                   </button>

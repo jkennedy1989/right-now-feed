@@ -161,9 +161,9 @@ export function BusinessDetailCard() {
             <div className="h-3 bg-gray-100 rounded animate-pulse w-3/4" />
           </div>
         ) : description ? (
-          <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-3">{description}</p>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">{description}</p>
         ) : business.hook ? (
-          <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{business.hook}</p>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">{business.hook}</p>
         ) : null}
 
         <button
