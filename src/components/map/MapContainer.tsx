@@ -64,14 +64,29 @@ function MapInner() {
   const hasActiveFilter = activePrimaryIds.length > 0;
   const hasSecondaryRow = !searchOverride && hasActiveFilter && secondaryFilters.length > 0;
 
-  // Always center on city on initial load (not user location)
+  // On initial load, fit bounds to show nearest curated pins
   useEffect(() => {
     if (!map) return;
     isProgrammaticMove.current = true;
-    map.panTo(cityCenter);
-    map.setZoom(DEFAULT_ZOOM);
+
+    const curated = places.filter((p) => p.source === 'curated');
+    if (curated.length >= 15) {
+      const sorted = [...curated]
+        .map((p) => ({ p, dist: haversineDistance(cityCenter, p.location) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 15);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bounds = new (window as any).google.maps.LatLngBounds();
+      sorted.forEach(({ p }) => bounds.extend(p.location));
+      map.fitBounds(bounds, { top: 60, bottom: 200, left: 20, right: 20 });
+    } else {
+      map.panTo(cityCenter);
+      map.setZoom(DEFAULT_ZOOM);
+    }
+
     setViewportCenter(cityCenter);
-  }, [map, cityCenter, selectedCity, setViewportCenter]);
+  }, [map, selectedCity]);
 
   // Fit bounds to shortlisted items
   useEffect(() => {
