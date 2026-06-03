@@ -192,7 +192,7 @@ function MapInner() {
       return selected ? [selected] : [];
     }
 
-    const pinCap = (!hasUserInteracted && !hasActiveFilter && !searchOverride) ? INITIAL_PIN_CAP : MAX_PINS;
+    const pinCap = MAX_PINS;
 
     if (!hasActiveFilter) {
       const curated = places.filter((p) => p.source === 'curated').slice(0, pinCap);
@@ -291,7 +291,7 @@ function MapInner() {
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
           <button
             onClick={triggerRedoSearch}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-full shadow-lg text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full shadow-lg text-xs font-medium text-gray-700 border border-gray-200 whitespace-nowrap hover:bg-gray-50 active:bg-gray-100 transition-all"
           >
             <RefreshCw size={14} className="text-gray-500" />
             <span>Redo search in this area</span>

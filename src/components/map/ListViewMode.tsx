@@ -5,7 +5,7 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { PhotoSlot } from '@/components/cards/PhotoSlot';
 import { CITIES } from '@/data/city-meta';
 import { X, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, trimSummary } from '@/lib/utils';
 
 export function ListViewMode() {
   const { listViewMode, exitListView, setListActiveIndex, selectedCity } = useAppContext();
@@ -122,7 +122,7 @@ export function ListViewMode() {
                     )}
                   </div>
                   {biz.hook && (
-                    <p className="text-xs text-gray-600">{biz.hook.length > 120 ? biz.hook.slice(0, 120) + '...' : biz.hook}</p>
+                    <p className="text-xs text-gray-600">{trimSummary(biz.hook)}</p>
                   )}
                 </div>
               </div>

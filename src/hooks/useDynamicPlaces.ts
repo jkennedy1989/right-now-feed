@@ -16,6 +16,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
   const [dynamicPlaces, setDynamicPlaces] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastFetchKey = useRef('');
+  const hasInitialFetch = useRef(false);
 
   const fetchPlaces = useCallback(async (center: { lat: number; lng: number }, keyword?: string) => {
     const fetchKey = `${center.lat.toFixed(3)}_${center.lng.toFixed(3)}_${keyword || ''}`;
@@ -28,7 +29,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
         lat: center.lat.toString(),
         lng: center.lng.toString(),
         radius: TWO_MILES_METERS.toString(),
-        maxResults: '40',
+        maxResults: '20',
       });
       if (keyword) params.set('keyword', keyword);
 
@@ -45,11 +46,15 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
     }
   }, []);
 
-  // Keyword-triggered fetch (auto-fetches on filter/search change)
+  // Only fetch on: initial load (once) or searchKeyword change
+  // Does NOT re-fetch on viewport pan — that's handled by redoSearch
   useEffect(() => {
     if (!viewportCenter) return;
 
+    // If no keyword: only fetch once on initial load
     if (!searchKeyword) {
+      if (hasInitialFetch.current) return;
+      hasInitialFetch.current = true;
       if (curatedCount >= 40) {
         setDynamicPlaces([]);
         lastFetchKey.current = '';
@@ -59,8 +64,9 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
       return;
     }
 
+    // Keyword changed (filter selected) — fetch at current viewport
     fetchPlaces(viewportCenter, searchKeyword);
-  }, [viewportCenter, searchKeyword, fetchPlaces, curatedCount]);
+  }, [searchKeyword, fetchPlaces, curatedCount, viewportCenter]);
 
   // Manual redo search (called when user taps "Redo search in this area")
   const redoSearch = useCallback((center: { lat: number; lng: number }, keyword?: string) => {
@@ -72,6 +78,7 @@ export function useDynamicPlaces({ viewportCenter, searchKeyword, selectedCity, 
   useEffect(() => {
     setDynamicPlaces([]);
     lastFetchKey.current = '';
+    hasInitialFetch.current = false;
   }, [selectedCity]);
 
   return { dynamicPlaces, isLoading, redoSearch };
