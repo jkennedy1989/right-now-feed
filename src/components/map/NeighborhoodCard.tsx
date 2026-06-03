@@ -155,11 +155,57 @@ export function NeighborhoodCard() {
     setCardState('collapsed');
   };
 
-  const handleHandleClick = useCallback(() => {
-    if (cardState === 'collapsed') setCardState('peek');
-    else if (cardState === 'peek') setCardState('expanded');
-    else setCardState('peek');
+  // Drag handle logic
+  const dragStartY = useRef<number | null>(null);
+  const didDrag = useRef(false);
+
+  const handleDragStart = useCallback((clientY: number) => {
+    dragStartY.current = clientY;
+    didDrag.current = false;
+  }, []);
+
+  const handleDragEnd = useCallback((clientY: number) => {
+    if (dragStartY.current === null) return;
+    const diff = dragStartY.current - clientY;
+    dragStartY.current = null;
+
+    if (Math.abs(diff) < 20) {
+      // Tap — no significant drag
+      if (!didDrag.current) {
+        if (cardState === 'collapsed') setCardState('peek');
+        else if (cardState === 'peek') setCardState('expanded');
+        else setCardState('peek');
+      }
+      return;
+    }
+
+    didDrag.current = true;
+    if (diff > 0) {
+      // Dragged up — expand
+      if (cardState === 'collapsed') setCardState('peek');
+      else if (cardState === 'peek') setCardState('expanded');
+    } else {
+      // Dragged down — collapse
+      if (cardState === 'expanded') setCardState('peek');
+      else if (cardState === 'peek') setCardState('collapsed');
+    }
   }, [cardState]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientY);
+  }, [handleDragStart]);
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    handleDragEnd(e.changedTouches[0].clientY);
+  }, [handleDragEnd]);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    handleDragStart(e.clientY);
+  }, [handleDragStart]);
+
+  const onMouseUp = useCallback((e: React.MouseEvent) => {
+    handleDragEnd(e.clientY);
+  }, [handleDragEnd]);
 
   // Scroll-to-expand: when in peek state, scrolling down expands to full
   const handleScroll = useCallback(() => {
@@ -173,12 +219,15 @@ export function NeighborhoodCard() {
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-all duration-300">
       {/* Handle */}
-      <button
-        onClick={handleHandleClick}
-        className="w-full pt-2 pb-1 flex justify-center flex-shrink-0"
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        className="w-full pt-2.5 pb-1.5 flex justify-center flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <div className="w-10 h-1 rounded-full bg-gray-300" />
-      </button>
+      </div>
 
       {/* Header — always visible */}
       {cardState !== 'collapsed' && (
