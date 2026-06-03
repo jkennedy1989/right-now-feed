@@ -11,8 +11,8 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { Locate, RefreshCw } from 'lucide-react';
 
 const DEFAULT_ZOOM = 14;
-const MAX_PINS = 15;
-const INITIAL_PIN_CAP = 10;
+const MAX_PINS = 20;
+const INITIAL_PIN_CAP = 20;
 
 function getCuisineEmoji(cuisine: string): string {
   const lower = cuisine.toLowerCase();
@@ -288,7 +288,7 @@ function MapInner() {
       </Map>
 
       {showRedoButton && !listViewMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30">
           <button
             onClick={triggerRedoSearch}
             className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-full shadow-lg text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-all"

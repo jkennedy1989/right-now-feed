@@ -82,13 +82,22 @@ export function computeBadgeMap(
     .sort((a, b) => stableHash(a.id) - stableHash(b.id))
     .slice(0, 2);
 
+  const FRIEND_ACTIONS = [
+    (name: string) => ({ label: `${name} added to "Been here"`, detail: `${name} added to their "Been here" list` }),
+    (name: string) => ({ label: `${name} added to "Want to go"`, detail: `${name} added to their "Want to go" list` }),
+    (name: string) => ({ label: `${name} reviewed this`, detail: `${name} reviewed this` }),
+  ];
+
   for (let i = 0; i < friendCandidates.length; i++) {
     const place = friendCandidates[i];
     const friend = MOCK_FRIENDS[i % MOCK_FRIENDS.length];
+    const actionIndex = stableHash(place.id + 'friend') % FRIEND_ACTIONS.length;
+    const action = FRIEND_ACTIONS[actionIndex](friend.name);
     badgeMap.set(place.id, {
       type: 'friend',
       emoji: '👤',
-      label: `${friend.name} liked this`,
+      label: action.label,
+      detail: action.detail,
       friendInitial: friend.initial,
       friendAvatar: friend.avatar,
     });
