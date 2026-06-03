@@ -38,7 +38,7 @@ function extractTrendingDishes(hooks: string[]): string[] {
 export function NeighborhoodCard() {
   const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView } = useAppContext();
   const city = CITIES[selectedCity];
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState<'lists' | 'full' | false>('lists');
   const [aiSummary, setAiSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [events, setEvents] = useState<{ id: string; title: string; start: string; venueName: string; category: string }[]>([]);
@@ -138,7 +138,7 @@ export function NeighborhoodCard() {
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden max-h-[60vh] flex flex-col">
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => setIsExpanded(isExpanded === 'full' ? 'lists' : 'full')}
         className="w-full p-4 flex items-center justify-between text-left flex-shrink-0"
       >
         <div className="flex-1 min-w-0">
@@ -167,7 +167,7 @@ export function NeighborhoodCard() {
           )}
         </div>
         <div className="ml-3 flex-shrink-0">
-          {isExpanded ? (
+          {isExpanded === 'full' ? (
             <ChevronUp size={16} className="text-gray-400" />
           ) : (
             <ChevronDown size={16} className="text-gray-400" />
@@ -176,12 +176,12 @@ export function NeighborhoodCard() {
       </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 animate-[slideUp_200ms_ease-out] overflow-y-auto flex-1 min-h-0">
+        <div className={`px-4 pb-4 animate-[slideUp_200ms_ease-out] ${isExpanded === 'full' ? 'overflow-y-auto flex-1 min-h-0' : ''}`}>
           {blurb && <p className="text-xs text-gray-500 mb-3">{blurb}</p>}
 
-          {/* Local Lists */}
+          {/* Local Lists — always shown when expanded */}
           {cityLists.length > 0 && (
-            <div className="mb-3">
+            <div className={isExpanded === 'full' ? 'mb-3' : ''}>
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>📋</span> Local lists
               </p>
@@ -205,7 +205,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {topCuisines.length > 0 && (
+          {isExpanded === 'full' && topCuisines.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>🍽️</span> Popular cuisines
@@ -224,7 +224,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {trendingDishes.length > 0 && (
+          {isExpanded === 'full' && trendingDishes.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>🔥</span> Trending dishes
@@ -243,7 +243,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {newOpenings.length > 0 && (
+          {isExpanded === 'full' && newOpenings.length > 0 && (
             <div className="mb-3">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                 <span>✨</span> New openings
@@ -262,7 +262,7 @@ export function NeighborhoodCard() {
             </div>
           )}
 
-          {events.length > 0 && (
+          {isExpanded === 'full' && events.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <span>📅</span> Upcoming events
