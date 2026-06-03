@@ -36,7 +36,7 @@ function extractTrendingDishes(hooks: string[]): string[] {
 }
 
 export function NeighborhoodCard() {
-  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView } = useAppContext();
+  const { selectedCity, places, signals, setSearchOverride, setSelectedBusinessId, setViewportCenter, injectPlace, enterListView, activePrimaryIds } = useAppContext();
   const city = CITIES[selectedCity];
   const [isExpanded, setIsExpanded] = useState<'lists' | 'full' | false>('lists');
   const [aiSummary, setAiSummary] = useState('');
@@ -45,6 +45,14 @@ export function NeighborhoodCard() {
   const [newOpenings, setNewOpenings] = useState<Business[]>([]);
   const fetchedForCity = useRef<string | null>(null);
   const eventsFetchedForCity = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (activePrimaryIds.length > 0) {
+      setIsExpanded(false);
+    } else {
+      setIsExpanded('lists');
+    }
+  }, [activePrimaryIds.length]);
 
   const isNight = signals.daylight === 'night';
   const greeting = isNight ? 'Tonight in' : 'Today in';
