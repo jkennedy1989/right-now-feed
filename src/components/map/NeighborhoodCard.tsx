@@ -203,7 +203,7 @@ export function NeighborhoodCard() {
         </div>
         <div className="px-4 pb-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900">
               {greeting} {city.name}
             </h2>
             {signals.weather && (
@@ -216,13 +216,6 @@ export function NeighborhoodCard() {
               </div>
             )}
           </div>
-          {summaryLoading ? (
-            <div className="mt-1">
-              <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
-            </div>
-          ) : blurb ? (
-            <p className="text-xs text-gray-500 mt-1">{blurb}</p>
-          ) : null}
         </div>
       </div>
 
