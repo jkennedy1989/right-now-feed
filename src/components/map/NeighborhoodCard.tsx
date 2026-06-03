@@ -158,7 +158,10 @@ export function NeighborhoodCard() {
     if (dragStartY.current === null) return;
     const diff = dragStartY.current - e.changedTouches[0].clientY;
     dragStartY.current = null;
-    if (Math.abs(diff) < 20) return;
+    if (Math.abs(diff) < 20) {
+      setIsExpanded((prev) => !prev);
+      return;
+    }
     if (diff > 0) {
       setIsExpanded(true);
     } else {
@@ -174,7 +177,10 @@ export function NeighborhoodCard() {
     if (dragStartY.current === null) return;
     const diff = dragStartY.current - e.clientY;
     dragStartY.current = null;
-    if (Math.abs(diff) < 20) return;
+    if (Math.abs(diff) < 20) {
+      setIsExpanded((prev) => !prev);
+      return;
+    }
     if (diff > 0) {
       setIsExpanded(true);
     } else {
