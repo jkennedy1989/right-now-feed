@@ -2,7 +2,7 @@
 
 import { useAppContext } from '@/providers/AppContextProvider';
 import { PrimaryPill, SecondaryPill } from './FilterPill';
-import { Bookmark, X } from 'lucide-react';
+import { Bookmark, X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLlmPills } from '@/hooks/useLlmPills';
 
@@ -68,7 +68,7 @@ export function FilterPillBar() {
                 <span>{shortlistIds.length}</span>
               </button>
             )}
-            {primaryFilters.map((pill) => (
+            {primaryFilters.slice(0, 5).map((pill) => (
               <PrimaryPill
                 key={pill.id}
                 pill={pill}
@@ -76,6 +76,10 @@ export function FilterPillBar() {
                 onToggle={() => togglePrimary(pill.id)}
               />
             ))}
+            <div className="flex items-center gap-1 px-3 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border border-gray-200 bg-gray-50 text-gray-400 shadow-sm cursor-default">
+              <Search size={14} />
+              <span>Search</span>
+            </div>
           </>
         )}
       </div>

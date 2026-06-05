@@ -268,7 +268,7 @@ export function generatePrimaryPills(signals: ContextSignals): PrimaryFilterPill
   // 1 vibe/events pill
   pills.push(...pickRandom(VIBE_PILLS, 1));
 
-  return pills.slice(0, 7);
+  return pills.slice(0, 5);
 }
 
 export function getSecondaryPills(primaryPills: PrimaryFilterPill | PrimaryFilterPill[]): SecondaryFilterPill[] {
