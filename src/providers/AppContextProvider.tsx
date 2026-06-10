@@ -54,6 +54,8 @@ interface AppState {
   viewportCenter: { lat: number; lng: number } | null;
   isDynamicLoading: boolean;
   selectedBusinessId: string | null;
+  focusedBusinessId: string | null;
+  filteredPlaces: Business[];
   showShortlistOnly: boolean;
   searchOverride: string | null;
   pendingFitToResults: boolean;
@@ -74,6 +76,7 @@ interface AppContextValue extends AppState {
   clearShortlist: () => void;
   toggleShortlistView: () => void;
   setSelectedBusinessId: (id: string | null) => void;
+  setFocusedBusinessId: (id: string | null) => void;
   setViewportCenter: (center: { lat: number; lng: number }) => void;
   onMapUserPan: (center: { lat: number; lng: number }) => void;
   triggerRedoSearch: () => void;
@@ -97,6 +100,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [shortlistIds, setShortlistIds] = useState<string[]>([]);
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [focusedBusinessId, setFocusedBusinessId] = useState<string | null>(null);
   const [searchOverride, setSearchOverrideRaw] = useState<string | null>(null);
   const [pendingFitToResults, setPendingFitToResults] = useState(false);
   const [showRedoButton, setShowRedoButton] = useState(false);
@@ -204,6 +208,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     [places, shortlistIds, selectedCity]
   );
 
+  const filteredPlaces = useMemo(() => {
+    if (activePrimaryPills.length === 0) return [];
+    return places.filter((p) => p.source === 'google').slice(0, 20);
+  }, [places, activePrimaryPills]);
+
   useEffect(() => {
     setIsLoading(false);
   }, []);
@@ -243,6 +252,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setLlmSecondaryPills([]);
     setHasUserInteracted(true);
     setShowRedoButton(false);
+    setFocusedBusinessId(null);
   }, [setSearchOverride]);
 
   const toggleSecondary = useCallback((id: string) => {
@@ -356,6 +366,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     viewportCenter,
     isDynamicLoading,
     selectedBusinessId,
+    focusedBusinessId,
+    filteredPlaces,
     showShortlistOnly,
     searchOverride,
     pendingFitToResults,
@@ -373,6 +385,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     clearShortlist,
     toggleShortlistView,
     setSelectedBusinessId,
+    setFocusedBusinessId,
     setViewportCenter,
     onMapUserPan,
     triggerRedoSearch,

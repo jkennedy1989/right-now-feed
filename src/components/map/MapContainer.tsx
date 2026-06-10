@@ -46,6 +46,8 @@ function MapInner() {
     showRedoButton,
     hasUserInteracted,
     setSelectedBusinessId,
+    setFocusedBusinessId,
+    focusedBusinessId,
     selectedBusinessId,
     searchOverride,
     pendingFitToResults,
@@ -138,6 +140,16 @@ function MapInner() {
       map.panTo(place.location);
     }
   }, [map, selectedBusinessId, places]);
+
+  // Pan to focused business (filter carousel interaction)
+  useEffect(() => {
+    if (!map || !focusedBusinessId) return;
+    const place = places.find((p) => p.id === focusedBusinessId);
+    if (place) {
+      isProgrammaticMove.current = true;
+      map.panTo(place.location);
+    }
+  }, [map, focusedBusinessId, places]);
 
   // List view: fit bounds to all list businesses, pan to active
   useEffect(() => {
@@ -246,10 +258,12 @@ function MapInner() {
     if (listViewMode) {
       const idx = listViewMode.businesses.findIndex((b) => b.id === business.id);
       if (idx >= 0) setListActiveIndex(idx);
+    } else if (hasActiveFilter) {
+      setFocusedBusinessId(business.id);
     } else {
       setSelectedBusinessId(business.id);
     }
-  }, [setSelectedBusinessId, listViewMode, setListActiveIndex]);
+  }, [setSelectedBusinessId, setFocusedBusinessId, hasActiveFilter, listViewMode, setListActiveIndex]);
 
   return (
     <div className="absolute inset-0">
@@ -269,6 +283,7 @@ function MapInner() {
           const emoji = getCuisineEmoji(place.cuisine);
           const isGoogle = place.source === 'google';
           const isSelected = place.id === selectedBusinessId ||
+            place.id === focusedBusinessId ||
             (listViewMode && listViewMode.businesses[listViewMode.activeIndex]?.id === place.id);
           const color = isSelected ? '#E00707' : hasActiveFilter || listViewMode ? '#E00707' : '#6B7280';
 
