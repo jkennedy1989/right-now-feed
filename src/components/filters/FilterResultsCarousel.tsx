@@ -35,7 +35,7 @@ export function FilterResultsCarousel() {
           <button
             key={biz.id}
             onClick={() => setFocusedBusinessId(biz.id)}
-            className={`flex-shrink-0 w-[100px] rounded-xl overflow-hidden border transition-all text-left ${
+            className={`flex-shrink-0 w-[120px] rounded-xl overflow-hidden border transition-all text-left bg-white ${
               isFocused
                 ? 'border-brand-500 shadow-md scale-[1.02]'
                 : 'border-gray-100 shadow-sm'
