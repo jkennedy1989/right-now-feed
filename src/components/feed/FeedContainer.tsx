@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { lists, FeedCategory, CuratedList, Business, singleItems } from "@/data/lists";
-import { FilterPills } from "./FilterPills";
 import { NeighborhoodModule } from "./NeighborhoodModule";
 import { ListCarousel } from "./ListCarousel";
 import { SingleCard } from "./SingleCard";
@@ -17,6 +16,7 @@ import { DailyPicksModule } from "../daily-picks/DailyPicksModule";
 import { SaveButton } from "../shared/SaveButton";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAppContext } from "@/providers/AppContextProvider";
+import { SUB_FILTER_LIST_MAP } from "@/components/map/MapFilterPills";
 
 const PINNED_IDS = ["check-off-wishlist-new", "latest-from-friends"];
 
@@ -30,7 +30,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function FeedContainer() {
-  const [activeCategory, setActiveCategory] = useState<FeedCategory>("all");
+  const { activeCategory, activeSubFilter } = useAppContext();
   const [showOverlay, setShowOverlay] = useState(false);
   const [feedLists, setFeedLists] = useState<CuratedList[]>([]);
 
@@ -39,13 +39,25 @@ export function FeedContainer() {
 
   useEffect(() => {
     const nonPinned = lists.filter((l) => !PINNED_IDS.includes(l.id) && l.moduleType !== "award");
-    const filtered = activeCategory === "all"
-      ? nonPinned
-      : activeCategory === "things-to-do"
-        ? nonPinned.filter((l) => l.category === "things-to-do" || l.category === "guides")
-        : nonPinned.filter((l) => l.category === activeCategory);
+    let filtered: CuratedList[];
+    if (activeCategory === "all") {
+      filtered = nonPinned;
+    } else if (activeCategory === "things-to-do") {
+      filtered = nonPinned.filter((l) => l.category === "things-to-do" || l.category === "guides");
+    } else {
+      filtered = nonPinned.filter((l) => l.category === activeCategory);
+    }
+
+    // Apply sub-filter if active
+    if (activeSubFilter) {
+      const listIds = SUB_FILTER_LIST_MAP[activeCategory]?.[activeSubFilter] || [];
+      if (listIds.length > 0) {
+        filtered = lists.filter((l) => listIds.includes(l.id));
+      }
+    }
+
     setFeedLists(shuffle(filtered));
-  }, [activeCategory]);
+  }, [activeCategory, activeSubFilter]);
 
   let singleIndex = 0;
 
@@ -54,8 +66,6 @@ export function FeedContainer() {
       {showOverlay && <DailyPicksOverlay onClose={() => setShowOverlay(false)} />}
 
       <div className="pb-20">
-        <FilterPills active={activeCategory} onChange={setActiveCategory} />
-
         {/* 1. Neighborhood Module */}
         <NeighborhoodModule />
 

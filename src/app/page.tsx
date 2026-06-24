@@ -3,6 +3,7 @@
 import { useCallback, useRef } from 'react';
 import { MapContainer } from '@/components/map/MapContainer';
 import { BusinessDetailCard } from '@/components/map/BusinessDetailCard';
+import { MapFilterPills } from '@/components/map/MapFilterPills';
 import { FeedContainer } from '@/components/feed/FeedContainer';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Search, MapPin, Map as MapIcon } from 'lucide-react';
@@ -78,6 +79,9 @@ export default function HomePage() {
               <span className="text-xs font-semibold text-gray-900">Toronto</span>
             </div>
           </header>
+
+          {/* Filter pills below header */}
+          {!selectedBusiness && <MapFilterPills />}
 
           {/* Business detail card */}
           {selectedBusiness && <BusinessDetailCard />}

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { getAllBusinesses, MOCK_USER_LOCATION, ContentBusiness, CategoryFilter, getBusinessCategory, getBusinessEmoji } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
+import { SUB_FILTER_LIST_MAP } from './MapFilterPills';
+import { lists } from '@/data/lists';
 import { ActivityBubble } from './ActivityBubble';
 import { RefreshCw } from 'lucide-react';
 
@@ -32,7 +34,7 @@ function MapInner() {
     selectedBusiness,
     activeModule,
     activeCategory,
-    setActiveCategory,
+    activeSubFilter,
     selectBusinessByName,
   } = useAppContext();
 
@@ -55,12 +57,25 @@ function MapInner() {
 
   const visibleBusinesses = useMemo(() => {
     if (activeModule) return activeModule.businesses.filter((b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832);
+
+    // Sub-filter: show only businesses from the sub-filter's lists
+    if (activeSubFilter && SUB_FILTER_LIST_MAP[activeCategory]?.[activeSubFilter]) {
+      const listIds = SUB_FILTER_LIST_MAP[activeCategory][activeSubFilter];
+      const subFilterBizNames = new Set<string>();
+      for (const list of lists) {
+        if (listIds.includes(list.id)) {
+          list.businesses.forEach((b) => subFilterBizNames.add(b.name));
+        }
+      }
+      return allBusinesses.filter((b) => subFilterBizNames.has(b.name));
+    }
+
     if (hasFilterActive || activeCategory !== 'all') {
       if (activeCategory === 'all') return allBusinesses;
       return allBusinesses.filter((b) => getBusinessCategory(b.name) === activeCategory);
     }
     return initialBusinesses;
-  }, [activeModule, activeCategory, allBusinesses, initialBusinesses, hasFilterActive]);
+  }, [activeModule, activeCategory, activeSubFilter, allBusinesses, initialBusinesses, hasFilterActive]);
 
   // Initial load — center on user location, ~2 mile radius
   useEffect(() => {
@@ -117,12 +132,6 @@ function MapInner() {
     }
   }, [activeModule, map]);
 
-  // When filter pill is clicked, show all relevant pins and hide redo button
-  const handleCategoryClick = useCallback((cat: CategoryFilter) => {
-    setActiveCategory(cat);
-    setHasFilterActive(true);
-    setShowRedoButton(false);
-  }, [setActiveCategory]);
 
   // "Search in this area" loads all pins for the current category
   const handleRedoSearch = useCallback(() => {

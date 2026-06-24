@@ -17,11 +17,13 @@ interface AppContextValue {
   activeBusinessIndex: number;
   feedState: 'collapsed' | 'half' | 'full';
   activeCategory: CategoryFilter;
+  activeSubFilter: string | null;
   setSelectedBusiness: (biz: ContentBusiness | null) => void;
   setActiveModule: (mod: ContentModule | null) => void;
   setActiveBusinessIndex: (index: number) => void;
   setFeedState: (state: 'collapsed' | 'half' | 'full') => void;
   setActiveCategory: (cat: CategoryFilter) => void;
+  setActiveSubFilter: (filter: string | null) => void;
   selectBusinessByName: (name: string) => void;
   restoreFeedState: () => void;
 }
@@ -34,11 +36,16 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [activeBusinessIndex, setActiveBusinessIndex] = useState(0);
   const [feedState, setFeedState] = useState<'collapsed' | 'half' | 'full'>('collapsed');
   const previousFeedState = useRef<'collapsed' | 'half' | 'full'>('collapsed');
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
+  const [activeCategory, setActiveCategoryRaw] = useState<CategoryFilter>('all');
+  const [activeSubFilter, setActiveSubFilter] = useState<string | null>(null);
+
+  const setActiveCategory = useCallback((cat: CategoryFilter) => {
+    setActiveCategoryRaw(cat);
+    setActiveSubFilter(null);
+  }, []);
 
   const selectBusinessByName = useCallback((name: string) => {
     previousFeedState.current = feedState;
-    // First try toronto-content modules
     for (const mod of TORONTO_MODULES) {
       const idx = mod.businesses.findIndex((b) => b.name === name);
       if (idx >= 0) {
@@ -49,7 +56,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         return;
       }
     }
-    // Try feed lists data and convert to ContentModule format
     for (const list of lists) {
       const idx = list.businesses.findIndex((b) => b.name === name);
       if (idx >= 0) {
@@ -89,11 +95,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     activeBusinessIndex,
     feedState,
     activeCategory,
+    activeSubFilter,
     setSelectedBusiness,
     setActiveModule,
     setActiveBusinessIndex,
     setFeedState,
     setActiveCategory,
+    setActiveSubFilter,
     selectBusinessByName,
     restoreFeedState,
   };
