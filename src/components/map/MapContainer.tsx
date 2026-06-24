@@ -145,7 +145,7 @@ function MapInner() {
           const isSelected = selectedBusiness?.name === biz.name;
           const emoji = getBusinessEmoji(biz.name);
           const rating = biz.rating;
-          const bgColor = rating >= 5 ? '#FB433C' : rating >= 4 ? '#FF643D' : rating >= 3 ? '#FF8742' : rating >= 2 ? '#FFAD48' : '#FFCC4B';
+          const bgColor = '#E00707';
           return (
             <AdvancedMarker
               key={biz.name}
@@ -157,7 +157,7 @@ function MapInner() {
                   className={`flex items-center rounded-full shadow-lg transition-transform ${
                     isSelected ? 'scale-110' : ''
                   }`}
-                  style={{ backgroundColor: rating > 0 ? bgColor : '#6B7280', borderColor: rating > 0 ? bgColor : '#6B7280', borderWidth: 2 }}
+                  style={{ backgroundColor: bgColor, borderColor: bgColor, borderWidth: 2 }}
                 >
                   <span className={`bg-white rounded-full flex items-center justify-center ${isSelected ? 'w-6 h-6 text-sm' : 'w-5 h-5 text-xs'}`}>
                     {emoji}
