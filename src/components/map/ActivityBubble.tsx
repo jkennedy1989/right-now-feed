@@ -23,7 +23,7 @@ export function ActivityBubble({ seed }: ActivityBubbleProps) {
       <img
         src={asset}
         alt=""
-        className="w-16 h-auto drop-shadow-md"
+        className="w-8 h-auto drop-shadow-md"
       />
     </div>
   );
