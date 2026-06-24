@@ -17,9 +17,9 @@ function BusinessCard({ business }: { business: ContentBusiness }) {
         <div className="p-3">
           <h3 className="text-sm font-bold text-gray-900">{business.name}</h3>
           {business.rating > 0 && (
-            <div className="flex items-center gap-1 mt-1">
-              <Star size={12} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-xs font-medium text-gray-700">{business.rating}</span>
+            <div className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 bg-brand rounded">
+              <Star size={10} className="text-white fill-white" />
+              <span className="text-[11px] text-white font-semibold">{business.rating}</span>
             </div>
           )}
           {business.description && (

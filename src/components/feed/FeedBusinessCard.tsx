@@ -34,9 +34,9 @@ export function FeedBusinessCard({ business, rank, friendActivity, onTap }: Feed
       <div className="p-2">
         <p className="text-xs font-semibold text-gray-900 line-clamp-1">{business.name}</p>
         {business.rating > 0 && (
-          <div className="flex items-center gap-0.5 mt-0.5">
-            <Star size={10} className="text-yellow-500 fill-yellow-500" />
-            <span className="text-[10px] text-gray-600 font-medium">{business.rating}</span>
+          <div className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 bg-brand rounded">
+            <Star size={9} className="text-white fill-white" />
+            <span className="text-[10px] text-white font-semibold">{business.rating}</span>
           </div>
         )}
         {friendActivity && (
