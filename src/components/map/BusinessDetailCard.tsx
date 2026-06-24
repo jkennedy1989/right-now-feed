@@ -96,7 +96,7 @@ export function BusinessDetailCard() {
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
               <MapPin size={10} className="text-gray-400" />
-              <span className="text-[10px] text-gray-500">{total} places</span>
+              <span className="text-[11px] font-semibold text-gray-700">{total} places</span>
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
