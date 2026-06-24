@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+// Link removed — no route pages
 import { ChevronRight } from "lucide-react";
 import { lists } from "@/data/lists";
 
@@ -40,12 +40,11 @@ export function CriticallyAcclaimedModule() {
                   </div>
                 ))}
               </div>
-              <Link
-                href={`/list/${list.id}`}
-                className="block text-center text-[11px] font-semibold text-amber-800 mt-3 py-1.5 rounded-full bg-[#FFF0CC] hover:bg-[#FFE8AA] transition-colors"
+              <div
+                className="block text-center text-[11px] font-semibold text-amber-800 mt-3 py-1.5 rounded-full bg-[#FFF0CC] hover:bg-[#FFE8AA] transition-colors cursor-pointer"
               >
                 See full list →
-              </Link>
+              </div>
             </div>
           ))}
         </div>

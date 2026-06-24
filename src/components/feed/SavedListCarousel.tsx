@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useAppContext } from "@/providers/AppContextProvider";
 import { ChevronRight, Clock } from "lucide-react";
 import { CuratedList } from "@/data/lists";
 import { SaveButton } from "../shared/SaveButton";
@@ -20,6 +20,7 @@ const mockTimes = [
 
 export function SavedListCarousel({ list }: { list: CuratedList }) {
   const { toggle } = useSavedItems();
+  const { selectBusinessByName } = useAppContext();
   const [booked, setBooked] = useState<Record<string, string>>({});
 
   const handleBook = (bizId: string, time: string) => {
@@ -41,15 +42,15 @@ export function SavedListCarousel({ list }: { list: CuratedList }) {
             <h2 className="text-base font-bold text-gray-900">{list.title}</h2>
             {list.description && <p className="text-xs text-gray-500 mt-0.5">{list.description}</p>}
           </div>
-          <Link href={`/list/${list.id}`} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
             <ChevronRight size={18} className="text-gray-600" />
-          </Link>
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto scrollbar-hide">
         <div className="flex gap-4 px-4 pb-2 w-max">
           {list.businesses.map((biz, i) => (
-            <div key={biz.id} className="w-[240px] flex-shrink-0">
+            <div key={biz.id} className="w-[240px] flex-shrink-0 cursor-pointer" onClick={() => selectBusinessByName(biz.name)}>
               <div className="relative h-[140px] rounded-[20px] overflow-hidden">
                 <Image
                   src={biz.imageUrl}

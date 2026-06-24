@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+// Link removed
 import { CuratedList } from "@/data/lists";
 import { SaveButton } from "./SaveButton";
 
@@ -18,7 +18,7 @@ export function ListThumb({ list, saved, onToggleSave, size = "small" }: ListThu
   const coverImage = list.businesses[0]?.imageUrl || "";
 
   return (
-    <Link href={`/list/${list.id}`} className={`${widthClass} flex-shrink-0 snap-start block`}>
+    <div className={`${widthClass} flex-shrink-0 snap-start block cursor-pointer`}>
       <div className={`relative ${heightClass} rounded-[20px] overflow-hidden group`}>
         <Image
           src={coverImage}
@@ -44,6 +44,6 @@ export function ListThumb({ list, saved, onToggleSave, size = "small" }: ListThu
           </p>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

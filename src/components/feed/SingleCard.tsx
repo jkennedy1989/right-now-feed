@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useAppContext } from "@/providers/AppContextProvider";
 import { CuratedList } from "@/data/lists";
 import { SaveButton } from "../shared/SaveButton";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -13,12 +13,13 @@ interface SingleCardProps {
 
 export function SingleCard({ list }: SingleCardProps) {
   const { isSaved, toggle } = useSavedItems();
+  const { selectBusinessByName } = useAppContext();
   const images = list.businesses.slice(0, 4).map((b) => b.imageUrl);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   return (
     <div className="px-4 py-4">
-      <Link href={`/list/${list.id}`} className="block">
+      <div onClick={() => selectBusinessByName(list.businesses[0]?.name)} className="block cursor-pointer">
         <div className="relative h-[300px] rounded-[20px] overflow-hidden">
           <div className="absolute inset-0 flex gap-[2px]">
             <div className="relative w-[60%] h-full">
@@ -48,7 +49,7 @@ export function SingleCard({ list }: SingleCardProps) {
             {list.author && <p className="text-white/50 text-[10px] mt-1">{list.author}</p>}
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 }

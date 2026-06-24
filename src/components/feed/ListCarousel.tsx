@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CuratedList } from "@/data/lists";
 import { SaveButton } from "../shared/SaveButton";
 import { EndCard } from "./EndCard";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useAppContext } from "@/providers/AppContextProvider";
 
 interface ListCarouselProps {
   list: CuratedList;
@@ -16,6 +16,7 @@ interface ListCarouselProps {
 
 export function ListCarousel({ list, ranked = false }: ListCarouselProps) {
   const { isSaved, toggle } = useSavedItems();
+  const { selectBusinessByName } = useAppContext();
   const displayBusinesses = ranked ? [...list.businesses].reverse() : list.businesses;
   const count = list.businesses.length;
   const isCelebrity = list.moduleType === "celebrity";
@@ -32,9 +33,9 @@ export function ListCarousel({ list, ranked = false }: ListCarouselProps) {
           <div>
             <h2 className="text-base font-bold text-gray-900">{list.title}</h2>
           </div>
-          <Link href={`/list/${list.id}`} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <ChevronRight size={18} className="text-gray-600" />
-          </Link>
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto scrollbar-hide">
@@ -52,6 +53,7 @@ export function ListCarousel({ list, ranked = false }: ListCarouselProps) {
               showAsSearchPill={list.id === "iconic-toronto-dishes"}
               showPricePill={list.id === "eats-under-20-new"}
               href={`/list/${list.id}?item=${ranked ? count - 1 - i : i}`}
+              onCardClick={() => selectBusinessByName(biz.name)}
             />
           ))}
           <EndCard listTitle={list.title} />
@@ -61,7 +63,7 @@ export function ListCarousel({ list, ranked = false }: ListCarouselProps) {
   );
 }
 
-function CompactCard({ business, saved, onToggleSave, rank, showDescription, showLocation, showAsSearchPill, showPricePill, unclapDescription, href }: {
+function CompactCard({ business, saved, onToggleSave, rank, showDescription, showLocation, showAsSearchPill, showPricePill, unclapDescription, href, onCardClick }: {
   business: { id: string; name: string; imageUrl: string; videoUrl?: string; description?: string; location?: string; price?: string };
   saved: boolean;
   onToggleSave: () => void;
@@ -72,13 +74,14 @@ function CompactCard({ business, saved, onToggleSave, rank, showDescription, sho
   showPricePill?: boolean;
   unclapDescription?: boolean;
   href?: string;
+  onCardClick?: () => void;
 }) {
   const [imgError, setImgError] = useState(false);
   const isVideo = !!business.videoUrl;
 
   if (showAsSearchPill) {
     return (
-      <Link href={href || "#"} className="relative w-[240px] flex-shrink-0 snap-start block">
+      <div onClick={onCardClick} className="relative w-[240px] flex-shrink-0 snap-start block cursor-pointer">
         <div className="relative h-[140px] rounded-[20px] overflow-hidden">
           {!imgError ? (
             <Image src={business.imageUrl} alt={business.name} fill className="object-cover" sizes="240px" unoptimized onError={() => setImgError(true)} />
@@ -100,12 +103,12 @@ function CompactCard({ business, saved, onToggleSave, rank, showDescription, sho
             {business.name}
           </span>
         </div>
-      </Link>
+      </div>
     );
   }
 
   return (
-    <Link href={href || "#"} className="relative w-[187px] flex-shrink-0 snap-start block">
+    <div onClick={onCardClick} className="relative w-[187px] flex-shrink-0 snap-start block cursor-pointer">
       <div className="relative h-[194px] rounded-[20px] overflow-hidden">
         {isVideo ? (
           <video src={business.videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
@@ -147,7 +150,7 @@ function CompactCard({ business, saved, onToggleSave, rank, showDescription, sho
           {business.price}
         </span>
       )}
-    </Link>
+    </div>
   );
 }
 

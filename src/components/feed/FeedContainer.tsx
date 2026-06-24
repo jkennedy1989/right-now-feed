@@ -16,6 +16,7 @@ import { DailyPicksOverlay } from "../daily-picks/DailyPicksOverlay";
 import { DailyPicksModule } from "../daily-picks/DailyPicksModule";
 import { SaveButton } from "../shared/SaveButton";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useAppContext } from "@/providers/AppContextProvider";
 
 const PINNED_IDS = ["check-off-wishlist-new", "latest-from-friends"];
 
@@ -158,6 +159,7 @@ const friendAvatars: Record<string, string> = {
 
 function FriendsCarousel({ list }: { list: CuratedList }) {
   const { isSaved, toggle } = useSavedItems();
+  const { selectBusinessByName } = useAppContext();
 
   return (
     <div className="py-5">
@@ -170,7 +172,7 @@ function FriendsCarousel({ list }: { list: CuratedList }) {
             const friendName = biz.friendActivity?.split(" ").slice(0, 2).join(" ") || "";
             const avatar = friendAvatars[friendName.trim()] || "";
             return (
-              <div key={biz.id} className="w-[240px] flex-shrink-0">
+              <div key={biz.id} className="w-[240px] flex-shrink-0 cursor-pointer" onClick={() => selectBusinessByName(biz.name)}>
                 <div className="relative h-[140px] rounded-[20px] overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={biz.imageUrl} alt={biz.name} className="w-full h-full object-cover" />

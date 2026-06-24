@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { useAppContext } from "@/providers/AppContextProvider";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 function Ticker({ items }: { items: string[] }) {
@@ -118,12 +118,12 @@ export function NeighborhoodModule() {
             const emoji = emojiMatch ? emojiMatch[0] : "📍";
             const titleWithoutEmoji = emojiMatch ? guide.title.slice(emojiMatch[0].length).trim() : guide.title;
             return (
-              <Link key={guide.id} href={`/list/${guide.id}`} className="flex-1 min-w-0">
+              <div key={guide.id} className="flex-1 min-w-0 cursor-pointer">
                 <div className="h-[74px] rounded-xl p-2.5 flex flex-col justify-between" style={{ background: guideGradients[idx % guideGradients.length] }}>
                   <span className="text-base">{emoji}</span>
                   <p className="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2">{titleWithoutEmoji}</p>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
