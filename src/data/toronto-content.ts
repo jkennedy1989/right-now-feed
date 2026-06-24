@@ -1786,6 +1786,7 @@ export const TORONTO_MODULES: ContentModule[] =
 ];
 
 export const TORONTO_CENTER = { lat: 43.6532, lng: -79.3832 };
+export const MOCK_USER_LOCATION = { lat: 43.6555, lng: -79.3950 };
 
 export type CategoryFilter = 'all' | 'restaurants' | 'things-to-do' | 'events' | 'services';
 

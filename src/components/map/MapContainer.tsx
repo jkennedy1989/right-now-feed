@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory, getBusinessEmoji } from '@/data/toronto-content';
+import { getAllBusinesses, MOCK_USER_LOCATION, ContentBusiness, CategoryFilter, getBusinessCategory, getBusinessEmoji } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { ActivityBubble } from './ActivityBubble';
 import { RefreshCw } from 'lucide-react';
@@ -62,11 +62,11 @@ function MapInner() {
     return initialBusinesses;
   }, [activeModule, activeCategory, allBusinesses, initialBusinesses, hasFilterActive]);
 
-  // Initial load — zoom to a comfortable level
+  // Initial load — center on user location, ~2 mile radius
   useEffect(() => {
     if (!map || hasInitialized.current) return;
     hasInitialized.current = true;
-    map.panTo(TORONTO_CENTER);
+    map.panTo(MOCK_USER_LOCATION);
     map.setZoom(DEFAULT_ZOOM);
   }, [map]);
 
@@ -137,7 +137,7 @@ function MapInner() {
   return (
     <div className="absolute inset-0">
       <Map
-        defaultCenter={TORONTO_CENTER}
+        defaultCenter={MOCK_USER_LOCATION}
         defaultZoom={DEFAULT_ZOOM}
         mapId="6891744d9000b9738574e55f"
         colorScheme="LIGHT"
@@ -186,6 +186,15 @@ function MapInner() {
             </AdvancedMarker>
           );
         })}
+
+        {/* Mock user location */}
+        <AdvancedMarker position={MOCK_USER_LOCATION}>
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-10 h-10 bg-blue-400/30 rounded-full animate-ping" />
+            <div className="absolute w-7 h-7 bg-blue-400/20 rounded-full" />
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-[3px] border-white shadow-lg" />
+          </div>
+        </AdvancedMarker>
       </Map>
 
 
