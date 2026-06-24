@@ -50,6 +50,25 @@ body {
   animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) translateX(2px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-2px) translateX(-2px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-5px) translateX(1px) rotate(1deg);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
 /* Hide Google Maps bottom controls (terms, shortcuts, report) */
 .gm-style .gm-style-cc,
 .gm-style .gmnoprint:not([data-control-width]) {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory, getBusinessEmoji } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
+import { ActivityBubble } from './ActivityBubble';
 import { RefreshCw } from 'lucide-react';
 
 const DEFAULT_ZOOM = 14;
@@ -25,6 +26,7 @@ function MapInner() {
   const idleCount = useRef(0);
   const [showRedoButton, setShowRedoButton] = useState(false);
   const [hasFilterActive, setHasFilterActive] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
 
   const {
     selectedBusiness,
@@ -99,6 +101,10 @@ function MapInner() {
   // Show redo button only when user manually moves the map
   const handleIdle = useCallback(() => {
     idleCount.current++;
+    if (map) {
+      const z = map.getZoom();
+      if (z !== undefined) setZoomLevel(z);
+    }
     if (isProgrammatic.current) {
       isProgrammatic.current = false;
       return;
@@ -109,7 +115,7 @@ function MapInner() {
       hasUserMoved.current = true;
       setShowRedoButton(true);
     }
-  }, [activeModule]);
+  }, [activeModule, map]);
 
   // When filter pill is clicked, show all relevant pins and hide redo button
   const handleCategoryClick = useCallback((cat: CategoryFilter) => {
@@ -141,18 +147,21 @@ function MapInner() {
         onIdle={handleIdle}
         style={{ width: '100%', height: '100%' }}
       >
-        {visibleBusinesses.map((biz) => {
+        {visibleBusinesses.map((biz, idx) => {
           const isSelected = selectedBusiness?.name === biz.name;
           const emoji = getBusinessEmoji(biz.name);
           const rating = biz.rating;
           const bgColor = '#E00707';
+          const nameHash = biz.name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+          const showBubble = zoomLevel >= 14 && visibleBusinesses.length <= 20 && nameHash % 10 === 0;
           return (
             <AdvancedMarker
               key={biz.name}
               position={biz.location}
               onClick={() => handleMarkerClick(biz)}
             >
-              <div className="flex flex-col items-center">
+              <div className="relative flex flex-col items-center">
+                {showBubble && <ActivityBubble seed={nameHash} />}
                 <div
                   className={`flex items-center rounded-full shadow-lg transition-transform ${
                     isSelected ? 'scale-110' : ''
