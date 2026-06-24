@@ -153,7 +153,7 @@ function MapInner() {
           const rating = biz.rating;
           const bgColor = '#E00707';
           const nameHash = biz.name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-          const showBubble = zoomLevel >= 14 && visibleBusinesses.length <= 20 && nameHash % 10 === 0;
+          const showBubble = zoomLevel >= 13 && nameHash % 7 < 1;
           return (
             <AdvancedMarker
               key={biz.name}
