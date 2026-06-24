@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES, getAllBusinesses } from '@/data/toronto-content';
 import { lists } from '@/data/lists';
 
@@ -23,6 +23,7 @@ interface AppContextValue {
   setFeedState: (state: 'collapsed' | 'half' | 'full') => void;
   setActiveCategory: (cat: CategoryFilter) => void;
   selectBusinessByName: (name: string) => void;
+  restoreFeedState: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -32,9 +33,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [activeModule, setActiveModule] = useState<ContentModule | null>(null);
   const [activeBusinessIndex, setActiveBusinessIndex] = useState(0);
   const [feedState, setFeedState] = useState<'collapsed' | 'half' | 'full'>('collapsed');
+  const previousFeedState = useRef<'collapsed' | 'half' | 'full'>('collapsed');
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
 
   const selectBusinessByName = useCallback((name: string) => {
+    previousFeedState.current = feedState;
     // First try toronto-content modules
     for (const mod of TORONTO_MODULES) {
       const idx = mod.businesses.findIndex((b) => b.name === name);
@@ -74,6 +77,10 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         return;
       }
     }
+  }, [feedState]);
+
+  const restoreFeedState = useCallback(() => {
+    setFeedState(previousFeedState.current);
   }, []);
 
   const value: AppContextValue = {
@@ -88,6 +95,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setFeedState,
     setActiveCategory,
     selectBusinessByName,
+    restoreFeedState,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

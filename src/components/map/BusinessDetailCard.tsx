@@ -43,7 +43,7 @@ export function BusinessDetailCard() {
     setActiveBusinessIndex,
     setSelectedBusiness,
     setActiveModule,
-    setFeedState,
+    restoreFeedState,
   } = useAppContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrollingProgrammatically = useRef(false);
@@ -76,8 +76,8 @@ export function BusinessDetailCard() {
   const handleClose = useCallback(() => {
     setSelectedBusiness(null);
     setActiveModule(null);
-    setFeedState('half');
-  }, [setSelectedBusiness, setActiveModule, setFeedState]);
+    restoreFeedState();
+  }, [setSelectedBusiness, setActiveModule, restoreFeedState]);
 
   const goTo = useCallback((dir: number) => {
     const next = activeBusinessIndex + dir;
