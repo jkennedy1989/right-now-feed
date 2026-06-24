@@ -1,8 +1,15 @@
 'use client';
 
 import { createContext, useCallback, useContext, useState } from 'react';
-import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES } from '@/data/toronto-content';
+import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES, getAllBusinesses } from '@/data/toronto-content';
 import { lists } from '@/data/lists';
+
+const locationLookup = new Map<string, { lat: number; lng: number }>();
+for (const biz of getAllBusinesses()) {
+  if (biz.location.lat !== 43.6532 || biz.location.lng !== -79.3832) {
+    locationLookup.set(biz.name, biz.location);
+  }
+}
 
 interface AppContextValue {
   selectedBusiness: ContentBusiness | null;
@@ -56,7 +63,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             description: b.description || '',
             imageUrl: b.imageUrl,
             googleMapsUrl: '',
-            location: { lat: b.lat || 43.6532, lng: b.lng || -79.3832 },
+            location: locationLookup.get(b.name) || { lat: b.lat || 43.6532, lng: b.lng || -79.3832 },
             friendActivity: b.friendActivity,
           })),
         };
