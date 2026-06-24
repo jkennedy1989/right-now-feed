@@ -11,12 +11,17 @@ export default function HomePage() {
   const { feedState, setFeedState, selectedBusiness } = useAppContext();
   const dragStartY = useRef<number | null>(null);
 
-  const expandUp = useCallback(() => {
+  const handleTap = useCallback(() => {
+    if (feedState === 'collapsed') setFeedState('half');
+    else if (feedState === 'half') setFeedState('collapsed');
+  }, [feedState, setFeedState]);
+
+  const handleDragUp = useCallback(() => {
     if (feedState === 'collapsed') setFeedState('half');
     else if (feedState === 'half') setFeedState('full');
   }, [feedState, setFeedState]);
 
-  const collapseDown = useCallback(() => {
+  const handleDragDown = useCallback(() => {
     if (feedState === 'full') setFeedState('half');
     else if (feedState === 'half') setFeedState('collapsed');
   }, [feedState, setFeedState]);
@@ -30,12 +35,12 @@ export default function HomePage() {
     const diff = dragStartY.current - e.changedTouches[0].clientY;
     dragStartY.current = null;
     if (Math.abs(diff) < 20) {
-      expandUp();
+      handleTap();
       return;
     }
-    if (diff > 0) expandUp();
-    else collapseDown();
-  }, [expandUp, collapseDown]);
+    if (diff > 0) handleDragUp();
+    else handleDragDown();
+  }, [handleTap, handleDragUp, handleDragDown]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     dragStartY.current = e.clientY;
@@ -46,12 +51,12 @@ export default function HomePage() {
     const diff = dragStartY.current - e.clientY;
     dragStartY.current = null;
     if (Math.abs(diff) < 20) {
-      expandUp();
+      handleTap();
       return;
     }
-    if (diff > 0) expandUp();
-    else collapseDown();
-  }, [expandUp, collapseDown]);
+    if (diff > 0) handleDragUp();
+    else handleDragDown();
+  }, [handleTap, handleDragUp, handleDragDown]);
 
   const isFull = feedState === 'full';
 
@@ -129,7 +134,7 @@ export default function HomePage() {
               <div className="sticky bottom-4 flex justify-center py-2 pointer-events-none z-40">
                 <button
                   onClick={() => setFeedState('half')}
-                  className="pointer-events-auto flex items-center gap-1.5 px-4 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-[#D71616] rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.1)] text-sm font-medium text-gray-800 hover:bg-white/90 transition-all"
+                  className="pointer-events-auto flex items-center gap-1.5 px-5 py-2.5 bg-[#E00707] border-[3px] border-white rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.15)] text-sm font-bold text-white hover:bg-[#c00606] transition-all"
                 >
                   <MapIcon size={15} />
                   <span>Map view</span>
