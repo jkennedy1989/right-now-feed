@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useState } from 'react';
 import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES } from '@/data/toronto-content';
+import { lists } from '@/data/lists';
 
 interface AppContextValue {
   selectedBusiness: ContentBusiness | null;
@@ -27,6 +28,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
 
   const selectBusinessByName = useCallback((name: string) => {
+    // First try toronto-content modules
     for (const mod of TORONTO_MODULES) {
       const idx = mod.businesses.findIndex((b) => b.name === name);
       if (idx >= 0) {
@@ -37,14 +39,33 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         return;
       }
     }
-    // Business not in any list — just select it solo
-    const allBiz = TORONTO_MODULES.flatMap((m) => m.businesses);
-    const biz = allBiz.find((b) => b.name === name);
-    if (biz) {
-      setSelectedBusiness(biz);
-      setActiveModule(null);
-      setActiveBusinessIndex(0);
-      setFeedState('collapsed');
+    // Try feed lists data and convert to ContentModule format
+    for (const list of lists) {
+      const idx = list.businesses.findIndex((b) => b.name === name);
+      if (idx >= 0) {
+        const converted: ContentModule = {
+          id: list.id,
+          type: 'list',
+          title: list.title,
+          description: list.description || '',
+          author: list.author || '',
+          emoji: '',
+          businesses: list.businesses.map((b) => ({
+            name: b.name,
+            rating: b.rating || 0,
+            description: b.description || '',
+            imageUrl: b.imageUrl,
+            googleMapsUrl: '',
+            location: { lat: b.lat || 43.6532, lng: b.lng || -79.3832 },
+            friendActivity: b.friendActivity,
+          })),
+        };
+        setActiveModule(converted);
+        setActiveBusinessIndex(idx);
+        setSelectedBusiness(converted.businesses[idx]);
+        setFeedState('collapsed');
+        return;
+      }
     }
   }, []);
 
