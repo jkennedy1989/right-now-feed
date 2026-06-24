@@ -3,7 +3,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { ContentBusiness } from '@/data/toronto-content';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { RatingPill } from '@/components/ui/RatingPill';
 
 function BusinessCard({ business }: { business: ContentBusiness }) {
@@ -87,45 +87,52 @@ export function BusinessDetailCard() {
 
   return (
     <div className="absolute bottom-4 left-0 right-0 z-20">
-      {/* Header with pagination and close */}
-      <div className="flex items-center justify-between px-4 mb-2">
-        <div className="flex items-center gap-2">
-          {activeModule && (
-            <span className="text-xs font-medium text-gray-500">
+      {/* Header pill */}
+      {activeModule && (
+        <div className="mx-4 mb-2 flex items-center justify-between px-4 py-2.5 bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+          <div className="flex-1 min-w-0 mr-2">
+            <h3 className="text-sm font-bold text-gray-900 line-clamp-2">
               {activeModule.emoji} {activeModule.title}
-            </span>
-          )}
+            </h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <MapPin size={10} className="text-gray-400" />
+              <span className="text-[10px] text-gray-500">{total} places</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => goTo(-1)}
+              disabled={activeBusinessIndex === 0}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30"
+            >
+              <ChevronLeft size={16} className="text-gray-600" />
+            </button>
+            <button
+              onClick={() => goTo(1)}
+              disabled={activeBusinessIndex >= total - 1}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30"
+            >
+              <ChevronRight size={16} className="text-gray-600" />
+            </button>
+            <button
+              onClick={handleClose}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 ml-0.5"
+            >
+              <X size={16} className="text-gray-600" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          {total > 1 && (
-            <>
-              <button
-                onClick={() => goTo(-1)}
-                disabled={activeBusinessIndex === 0}
-                className="w-6 h-6 flex items-center justify-center rounded-full bg-white/90 shadow-sm disabled:opacity-30"
-              >
-                <ChevronLeft size={14} className="text-gray-600" />
-              </button>
-              <span className="text-[10px] font-medium text-gray-500 mx-1">
-                {activeBusinessIndex + 1}/{total}
-              </span>
-              <button
-                onClick={() => goTo(1)}
-                disabled={activeBusinessIndex >= total - 1}
-                className="w-6 h-6 flex items-center justify-center rounded-full bg-white/90 shadow-sm disabled:opacity-30"
-              >
-                <ChevronRight size={14} className="text-gray-600" />
-              </button>
-            </>
-          )}
+      )}
+      {!activeModule && (
+        <div className="flex justify-end px-4 mb-2">
           <button
             onClick={handleClose}
-            className="w-6 h-6 flex items-center justify-center rounded-full bg-white/90 shadow-sm ml-1"
+            className="w-7 h-7 flex items-center justify-center rounded-full bg-white/70 backdrop-blur-xl border border-white/30 shadow-sm"
           >
             <X size={14} className="text-gray-600" />
           </button>
         </div>
-      </div>
+      )}
 
       {/* Card carousel */}
       <div
