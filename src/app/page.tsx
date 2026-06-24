@@ -3,7 +3,7 @@
 import { useCallback, useRef } from 'react';
 import { MapContainer } from '@/components/map/MapContainer';
 import { BusinessDetailCard } from '@/components/map/BusinessDetailCard';
-import { Feed } from '@/components/feed/Feed';
+import { FeedContainer } from '@/components/feed/FeedContainer';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Search, MapPin, Map as MapIcon } from 'lucide-react';
 
@@ -123,7 +123,7 @@ export default function HomePage() {
 
           {/* Feed content */}
           <div className={`relative flex-1 min-h-0 overflow-y-auto ${feedState === 'collapsed' ? 'overflow-hidden' : ''}`}>
-            <Feed />
+            <FeedContainer />
             {/* Map view button — floating in full mode */}
             {isFull && (
               <div className="sticky bottom-4 flex justify-center py-2 pointer-events-none z-40">

@@ -69,6 +69,25 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
+@keyframes bubble-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  25% { transform: translateY(-6px) rotate(5deg); }
+  50% { transform: translateY(-2px) rotate(-4deg); }
+  75% { transform: translateY(-8px) rotate(6deg); }
+}
+
+.animate-bubble-float {
+  animation: bubble-float 3s ease-in-out infinite;
+}
+
+.phone-screen {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.phone-screen::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide Google Maps bottom controls (terms, shortcuts, report) */
 .gm-style .gm-style-cc,
 .gm-style .gmnoprint:not([data-control-width]) {
