@@ -88,6 +88,7 @@ function getTrendingPills(): string[] {
 export function NeighborhoodModule() {
   const [expanded, setExpanded] = useState(false);
   const [trending, setTrending] = useState<string[]>([]);
+  const { selectBusinessByName } = useAppContext();
   const guides = lists.filter((l) => l.moduleType === "guide");
   const isNight = new Date().getHours() >= 18 || new Date().getHours() < 6;
   const greeting = isNight ? "Tonight in Toronto" : "Today in Toronto";
@@ -118,7 +119,7 @@ export function NeighborhoodModule() {
             const emoji = emojiMatch ? emojiMatch[0] : "📍";
             const titleWithoutEmoji = emojiMatch ? guide.title.slice(emojiMatch[0].length).trim() : guide.title;
             return (
-              <div key={guide.id} className="flex-1 min-w-0 cursor-pointer">
+              <div key={guide.id} className="flex-1 min-w-0 cursor-pointer" onClick={() => guide.businesses[0] && selectBusinessByName(guide.businesses[0].name)}>
                 <div className="h-[74px] rounded-xl p-2.5 flex flex-col justify-between" style={{ background: guideGradients[idx % guideGradients.length] }}>
                   <span className="text-base">{emoji}</span>
                   <p className="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2">{titleWithoutEmoji}</p>
