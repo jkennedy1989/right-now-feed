@@ -49,3 +49,12 @@ body {
 .animate-pulse-ring {
   animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Hide Google Maps bottom controls (terms, shortcuts, report) */
+.gm-style .gm-style-cc,
+.gm-style .gmnoprint:not([data-control-width]) {
+  display: none !important;
+}
+.gm-style a[href*="maps.google.com/maps"] {
+  display: none !important;
+}
