@@ -12,8 +12,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Right Now',
-  description: 'Discover what\'s happening around you, right now.',
+  title: 'Map First',
+  description: 'Discover the best spots around you.',
 };
 
 export default function RootLayout({
