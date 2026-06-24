@@ -63,7 +63,7 @@ export default function HomePage() {
           <MapContainer />
 
           {/* Header */}
-          <header className="absolute top-3 left-3 right-3 z-30 flex items-center gap-2 px-3 py-2 bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+          <header className="absolute top-3 left-3 right-3 z-30 flex items-center gap-2 px-3 py-2 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
             <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-gray-100/80 rounded-full">
               <Search size={14} className="text-gray-400 flex-shrink-0" />
               <span className="text-sm text-gray-400">Search restaurants, bars...</span>
