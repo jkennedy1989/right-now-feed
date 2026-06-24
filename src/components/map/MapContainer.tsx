@@ -163,7 +163,7 @@ function MapInner() {
                     {emoji}
                   </span>
                   {rating > 0 && (
-                    <span className={`text-white font-semibold pr-1.5 ${isSelected ? 'text-xs pl-1' : 'text-[9px] pl-0.5'}`}>
+                    <span className={`text-white font-bold pr-1.5 ${isSelected ? 'text-sm pl-1' : 'text-[11px] pl-1'}`}>
                       {rating.toFixed(1)}
                     </span>
                   )}
