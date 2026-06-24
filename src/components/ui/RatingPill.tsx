@@ -19,7 +19,7 @@ export function RatingPill({ rating, size = 'sm' }: RatingPillProps) {
 
   return (
     <div
-      className={`inline-flex items-center gap-0.5 rounded ${
+      className={`inline-flex items-center gap-0.5 rounded-full ${
         size === 'sm' ? 'px-1.5 py-0.5' : 'px-2 py-1'
       }`}
       style={{ backgroundColor: color }}
