@@ -14,7 +14,7 @@ export function ActivityBubble({ seed }: ActivityBubbleProps) {
 
   return (
     <div
-      className="absolute -top-10 pointer-events-none animate-float"
+      className="absolute -top-6 pointer-events-none animate-float"
       style={{
         left: `${offsetX}px`,
         animationDelay: `${animDelay}s`,
