@@ -188,24 +188,6 @@ function MapInner() {
         })}
       </Map>
 
-      {/* Category filter pills */}
-      {!activeModule && (
-        <div className="absolute top-[72px] left-0 right-0 z-20 flex gap-2 overflow-x-auto scrollbar-hide px-3">
-          {CATEGORY_PILLS.map((pill) => (
-            <button
-              key={pill.id}
-              onClick={() => handleCategoryClick(pill.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                activeCategory === pill.id
-                  ? 'bg-gray-900 text-white shadow-md'
-                  : 'bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 shadow-sm'
-              }`}
-            >
-              {pill.label}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Redo search button */}
       {showRedoButton && !activeModule && (
