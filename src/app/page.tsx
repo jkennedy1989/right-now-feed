@@ -115,7 +115,7 @@ export default function HomePage() {
               onTouchEnd={onTouchEnd}
               onMouseDown={onMouseDown}
               onMouseUp={onMouseUp}
-              className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none pt-2 pb-1 flex justify-center"
+              className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none py-3 flex justify-center"
             >
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
