@@ -1,6 +1,7 @@
 'use client';
 
 import { TORONTO_MODULES, ContentModule } from '@/data/toronto-content';
+import { useAppContext } from '@/providers/AppContextProvider';
 import { FeedBusinessCard } from './FeedBusinessCard';
 import { ChevronRight, Award, Users } from 'lucide-react';
 
@@ -65,7 +66,7 @@ function SingleCard({ module }: { module: ContentModule }) {
 function CarouselModule({ module }: { module: ContentModule }) {
   const isRanked = module.type === 'ranked-list';
   const isFriends = module.type === 'friends-activity';
-  const isSaved = module.type === 'previously-saved';
+  const { selectBusinessByName } = useAppContext();
 
   return (
     <div className="py-3">
@@ -79,6 +80,7 @@ function CarouselModule({ module }: { module: ContentModule }) {
             business={biz}
             rank={isRanked ? i + 1 : undefined}
             friendActivity={isFriends ? biz.friendActivity : undefined}
+            onTap={() => selectBusinessByName(biz.name)}
           />
         ))}
       </div>

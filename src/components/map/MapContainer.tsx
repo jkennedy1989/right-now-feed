@@ -2,11 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import { getTopBusinesses, TORONTO_CENTER, ContentBusiness } from '@/data/toronto-content';
+import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
 
 const DEFAULT_ZOOM = 13;
-const MAX_PINS = 20;
+
+const CATEGORY_PILLS: { id: CategoryFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'restaurants', label: 'Restaurants' },
+  { id: 'things-to-do', label: 'Things to do' },
+  { id: 'events', label: 'Events' },
+  { id: 'services', label: 'Services' },
+];
 
 function MapInner() {
   const map = useMap();
@@ -16,53 +23,63 @@ function MapInner() {
   const {
     selectedBusiness,
     activeModule,
-    activeBusinessIndex,
+    activeCategory,
+    setActiveCategory,
     selectBusinessByName,
   } = useAppContext();
 
-  const defaultBusinesses = useMemo(() => getTopBusinesses(MAX_PINS), []);
+  const allBusinesses = useMemo(() => {
+    return getAllBusinesses().filter(
+      (b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832
+    );
+  }, []);
 
   const visibleBusinesses = useMemo(() => {
-    if (activeModule) return activeModule.businesses;
-    return defaultBusinesses;
-  }, [activeModule, defaultBusinesses]);
+    if (activeModule) return activeModule.businesses.filter((b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832);
+    if (activeCategory === 'all') return allBusinesses;
+    return allBusinesses.filter((b) => getBusinessCategory(b.name) === activeCategory);
+  }, [activeModule, activeCategory, allBusinesses]);
 
-  // Initial load — fit bounds to default pins
+  // Initial load — fit bounds
   useEffect(() => {
     if (!map || hasInitialized.current) return;
     hasInitialized.current = true;
 
-    if (defaultBusinesses.length >= 10) {
+    if (visibleBusinesses.length >= 5) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bounds = new (window as any).google.maps.LatLngBounds();
-      defaultBusinesses.slice(0, 15).forEach((b) => bounds.extend(b.location));
+      visibleBusinesses.slice(0, 20).forEach((b) => bounds.extend(b.location));
       map.fitBounds(bounds, { top: 60, bottom: 20, left: 20, right: 20 });
     } else {
       map.panTo(TORONTO_CENTER);
       map.setZoom(DEFAULT_ZOOM);
     }
-  }, [map, defaultBusinesses]);
+  }, [map, visibleBusinesses]);
 
   // When active module changes, fit bounds to its businesses
   useEffect(() => {
     if (!map || !activeModule) return;
     isProgrammatic.current = true;
+    const bizes = activeModule.businesses.filter((b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832);
 
-    if (activeModule.businesses.length === 1) {
-      map.panTo(activeModule.businesses[0].location);
+    if (bizes.length === 1) {
+      map.panTo(bizes[0].location);
       map.setZoom(15);
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bounds = new (window as any).google.maps.LatLngBounds();
-    activeModule.businesses.forEach((b) => bounds.extend(b.location));
-    map.fitBounds(bounds, { top: 60, bottom: 20, left: 20, right: 20 });
+    if (bizes.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bounds = new (window as any).google.maps.LatLngBounds();
+      bizes.forEach((b) => bounds.extend(b.location));
+      map.fitBounds(bounds, { top: 60, bottom: 20, left: 20, right: 20 });
+    }
   }, [map, activeModule?.id]);
 
   // Pan to selected business
   useEffect(() => {
     if (!map || !selectedBusiness) return;
+    if (selectedBusiness.location.lat === 43.6532 && selectedBusiness.location.lng === -79.3832) return;
     isProgrammatic.current = true;
     map.panTo(selectedBusiness.location);
   }, [map, selectedBusiness]);
@@ -93,7 +110,7 @@ function MapInner() {
             >
               <div className="flex flex-col items-center">
                 <div className={`rounded-full shadow-lg border-2 border-white flex items-center justify-center text-sm transition-transform ${
-                  isSelected ? 'w-10 h-10 bg-brand scale-110' : 'w-8 h-8 bg-brand'
+                  isSelected ? 'w-10 h-10 bg-brand scale-110' : 'w-7 h-7 bg-brand'
                 }`}>
                   🍽️
                 </div>
@@ -107,6 +124,25 @@ function MapInner() {
           );
         })}
       </Map>
+
+      {/* Category filter pills */}
+      {!activeModule && (
+        <div className="absolute top-16 left-0 right-0 z-20 flex gap-1.5 overflow-x-auto scrollbar-hide px-3">
+          {CATEGORY_PILLS.map((pill) => (
+            <button
+              key={pill.id}
+              onClick={() => setActiveCategory(pill.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                activeCategory === pill.id
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : 'bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 shadow-sm'
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,17 +1,19 @@
 'use client';
 
 import { createContext, useCallback, useContext, useState } from 'react';
-import { ContentBusiness, ContentModule, TORONTO_MODULES } from '@/data/toronto-content';
+import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES } from '@/data/toronto-content';
 
 interface AppContextValue {
   selectedBusiness: ContentBusiness | null;
   activeModule: ContentModule | null;
   activeBusinessIndex: number;
   feedExpanded: boolean;
+  activeCategory: CategoryFilter;
   setSelectedBusiness: (biz: ContentBusiness | null) => void;
   setActiveModule: (mod: ContentModule | null) => void;
   setActiveBusinessIndex: (index: number) => void;
   setFeedExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void;
+  setActiveCategory: (cat: CategoryFilter) => void;
   selectBusinessByName: (name: string) => void;
 }
 
@@ -22,6 +24,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [activeModule, setActiveModule] = useState<ContentModule | null>(null);
   const [activeBusinessIndex, setActiveBusinessIndex] = useState(0);
   const [feedExpanded, setFeedExpanded] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
 
   const selectBusinessByName = useCallback((name: string) => {
     for (const mod of TORONTO_MODULES) {
@@ -50,10 +53,12 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     activeModule,
     activeBusinessIndex,
     feedExpanded,
+    activeCategory,
     setSelectedBusiness,
     setActiveModule,
     setActiveBusinessIndex,
     setFeedExpanded,
+    setActiveCategory,
     selectBusinessByName,
   };
 

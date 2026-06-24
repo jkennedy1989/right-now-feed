@@ -1787,6 +1787,25 @@ export const TORONTO_MODULES: ContentModule[] =
 
 export const TORONTO_CENTER = { lat: 43.6532, lng: -79.3832 };
 
+export type CategoryFilter = 'all' | 'restaurants' | 'things-to-do' | 'events' | 'services';
+
+const THINGS_TO_DO_MODULES = new Set(['module-9', 'module-10', 'module-11', 'module-21', 'module-23']);
+
+export function getModuleCategory(mod: ContentModule): CategoryFilter {
+  if (mod.type === 'services') return 'services';
+  if (THINGS_TO_DO_MODULES.has(mod.id)) return 'things-to-do';
+  return 'restaurants';
+}
+
+export function getBusinessCategory(bizName: string): CategoryFilter {
+  for (const mod of TORONTO_MODULES) {
+    if (mod.businesses.some((b) => b.name === bizName)) {
+      return getModuleCategory(mod);
+    }
+  }
+  return 'restaurants';
+}
+
 export function getAllBusinesses(): ContentBusiness[] {
   const seen = new Set<string>();
   const all: ContentBusiness[] = [];
