@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory } from '@/data/toronto-content';
+import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory, getBusinessEmoji } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { RefreshCw } from 'lucide-react';
 
@@ -137,6 +137,9 @@ function MapInner() {
       >
         {visibleBusinesses.map((biz) => {
           const isSelected = selectedBusiness?.name === biz.name;
+          const emoji = getBusinessEmoji(biz.name);
+          const rating = biz.rating;
+          const bgColor = rating >= 5 ? '#FB433C' : rating >= 4 ? '#FF643D' : rating >= 3 ? '#FF8742' : rating >= 2 ? '#FFAD48' : '#FFCC4B';
           return (
             <AdvancedMarker
               key={biz.name}
@@ -144,13 +147,21 @@ function MapInner() {
               onClick={() => handleMarkerClick(biz)}
             >
               <div className="flex flex-col items-center">
-                <div className={`rounded-full shadow-lg border-2 border-white flex items-center justify-center text-sm transition-transform ${
-                  isSelected ? 'w-10 h-10 bg-brand scale-110' : 'w-7 h-7 bg-brand'
-                }`}>
-                  🍽️
+                <div
+                  className={`flex items-center gap-0.5 rounded-full shadow-lg border-2 border-white transition-transform ${
+                    isSelected ? 'scale-110 px-2 py-1' : 'px-1.5 py-0.5'
+                  }`}
+                  style={{ backgroundColor: rating > 0 ? bgColor : '#6B7280' }}
+                >
+                  <span className={isSelected ? 'text-sm' : 'text-xs'}>{emoji}</span>
+                  {rating > 0 && (
+                    <span className={`text-white font-semibold ${isSelected ? 'text-xs' : 'text-[9px]'}`}>
+                      {rating.toFixed(1)}
+                    </span>
+                  )}
                 </div>
                 {isSelected && (
-                  <div className="mt-1 whitespace-nowrap text-[10px] font-semibold text-gray-900 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm max-w-[80px] truncate text-center">
+                  <div className="mt-1 whitespace-nowrap text-[10px] font-semibold text-gray-900 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm max-w-[100px] truncate text-center">
                     {biz.name}
                   </div>
                 )}

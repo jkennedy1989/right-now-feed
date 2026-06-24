@@ -1806,6 +1806,15 @@ export function getBusinessCategory(bizName: string): CategoryFilter {
   return 'restaurants';
 }
 
+export function getBusinessEmoji(bizName: string): string {
+  for (const mod of TORONTO_MODULES) {
+    if (mod.businesses.some((b) => b.name === bizName)) {
+      return mod.emoji || '📍';
+    }
+  }
+  return '📍';
+}
+
 export function getAllBusinesses(): ContentBusiness[] {
   const seen = new Set<string>();
   const all: ContentBusiness[] = [];
