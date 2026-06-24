@@ -18,12 +18,23 @@ export function FeedBusinessCard({ business, rank, friendActivity, onTap }: Feed
     >
       <div className="h-[100px] w-full relative bg-gray-100">
         {business.imageUrl && (
-          <img
-            src={business.imageUrl}
-            alt={business.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          business.imageUrl.includes('.mp4') || business.imageUrl.includes('stream.mux.com') ? (
+            <video
+              src={business.imageUrl}
+              className="w-full h-full object-cover"
+              muted
+              autoPlay
+              loop
+              playsInline
+            />
+          ) : (
+            <img
+              src={business.imageUrl}
+              alt={business.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          )
         )}
         {rank && (
           <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/70 text-white text-[10px] font-bold flex items-center justify-center">

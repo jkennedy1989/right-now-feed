@@ -12,7 +12,11 @@ function BusinessCard({ business }: { business: ContentBusiness }) {
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden mx-4">
         {business.imageUrl && (
           <div className="h-32 w-full bg-gray-100">
-            <img src={business.imageUrl} alt={business.name} className="w-full h-full object-cover" />
+            {business.imageUrl.includes('.mp4') || business.imageUrl.includes('stream.mux.com') ? (
+              <video src={business.imageUrl} className="w-full h-full object-cover" muted autoPlay loop playsInline />
+            ) : (
+              <img src={business.imageUrl} alt={business.name} className="w-full h-full object-cover" />
+            )}
           </div>
         )}
         <div className="p-3">

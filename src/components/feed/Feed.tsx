@@ -44,7 +44,11 @@ function SingleCard({ module }: { module: ContentModule }) {
           <div key={biz.name} className="rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm">
             {biz.imageUrl && (
               <div className="h-[140px] w-full bg-gray-100">
-                <img src={biz.imageUrl} alt={biz.name} className="w-full h-full object-cover" loading="lazy" />
+                {biz.imageUrl.includes('.mp4') || biz.imageUrl.includes('stream.mux.com') ? (
+                  <video src={biz.imageUrl} className="w-full h-full object-cover" muted autoPlay loop playsInline />
+                ) : (
+                  <img src={biz.imageUrl} alt={biz.name} className="w-full h-full object-cover" loading="lazy" />
+                )}
               </div>
             )}
             <div className="p-3">
