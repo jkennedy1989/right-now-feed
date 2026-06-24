@@ -129,7 +129,7 @@ export default function HomePage() {
               <div className="sticky bottom-4 flex justify-center py-2 pointer-events-none z-40">
                 <button
                   onClick={() => setFeedState('half')}
-                  className="pointer-events-auto flex items-center gap-1.5 px-4 py-2.5 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.1)] text-sm font-medium text-gray-800 hover:bg-white/90 transition-all"
+                  className="pointer-events-auto flex items-center gap-1.5 px-4 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-[#D71616] rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.1)] text-sm font-medium text-gray-800 hover:bg-white/90 transition-all"
                 >
                   <MapIcon size={15} />
                   <span>Map view</span>
