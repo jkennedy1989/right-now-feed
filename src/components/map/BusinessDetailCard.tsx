@@ -3,7 +3,8 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { ContentBusiness } from '@/data/toronto-content';
-import { X, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RatingPill } from '@/components/ui/RatingPill';
 
 function BusinessCard({ business }: { business: ContentBusiness }) {
   return (
@@ -17,9 +18,8 @@ function BusinessCard({ business }: { business: ContentBusiness }) {
         <div className="p-3">
           <h3 className="text-sm font-bold text-gray-900">{business.name}</h3>
           {business.rating > 0 && (
-            <div className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 bg-brand rounded">
-              <Star size={10} className="text-white fill-white" />
-              <span className="text-[11px] text-white font-semibold">{business.rating}</span>
+            <div className="mt-1">
+              <RatingPill rating={business.rating} size="md" />
             </div>
           )}
           {business.description && (

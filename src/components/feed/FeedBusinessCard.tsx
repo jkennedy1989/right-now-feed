@@ -1,7 +1,7 @@
 'use client';
 
 import { ContentBusiness } from '@/data/toronto-content';
-import { Star } from 'lucide-react';
+import { RatingPill } from '@/components/ui/RatingPill';
 
 interface FeedBusinessCardProps {
   business: ContentBusiness;
@@ -34,9 +34,8 @@ export function FeedBusinessCard({ business, rank, friendActivity, onTap }: Feed
       <div className="p-2">
         <p className="text-xs font-semibold text-gray-900 line-clamp-1">{business.name}</p>
         {business.rating > 0 && (
-          <div className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 bg-brand rounded">
-            <Star size={9} className="text-white fill-white" />
-            <span className="text-[10px] text-white font-semibold">{business.rating}</span>
+          <div className="mt-0.5">
+            <RatingPill rating={business.rating} size="sm" />
           </div>
         )}
         {friendActivity && (
