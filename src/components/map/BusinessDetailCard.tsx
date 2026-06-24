@@ -76,7 +76,7 @@ export function BusinessDetailCard() {
   const handleClose = useCallback(() => {
     setSelectedBusiness(null);
     setActiveModule(null);
-    setFeedState('collapsed');
+    setFeedState('half');
   }, [setSelectedBusiness, setActiveModule, setFeedState]);
 
   const goTo = useCallback((dir: number) => {
