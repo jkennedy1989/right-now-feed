@@ -148,14 +148,16 @@ function MapInner() {
             >
               <div className="flex flex-col items-center">
                 <div
-                  className={`flex items-center gap-0.5 rounded-full shadow-lg border-2 border-white transition-transform ${
-                    isSelected ? 'scale-110 px-2 py-1' : 'px-1.5 py-0.5'
+                  className={`flex items-center rounded-full shadow-lg transition-transform ${
+                    isSelected ? 'scale-110' : ''
                   }`}
-                  style={{ backgroundColor: rating > 0 ? bgColor : '#6B7280' }}
+                  style={{ backgroundColor: rating > 0 ? bgColor : '#6B7280', borderColor: rating > 0 ? bgColor : '#6B7280', borderWidth: 2 }}
                 >
-                  <span className={isSelected ? 'text-sm' : 'text-xs'}>{emoji}</span>
+                  <span className={`bg-white rounded-full flex items-center justify-center ${isSelected ? 'w-6 h-6 text-sm' : 'w-5 h-5 text-xs'}`}>
+                    {emoji}
+                  </span>
                   {rating > 0 && (
-                    <span className={`text-white font-semibold ${isSelected ? 'text-xs' : 'text-[9px]'}`}>
+                    <span className={`text-white font-semibold pr-1.5 ${isSelected ? 'text-xs pl-1' : 'text-[9px] pl-0.5'}`}>
                       {rating.toFixed(1)}
                     </span>
                   )}

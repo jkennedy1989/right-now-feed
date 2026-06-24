@@ -1276,10 +1276,10 @@ export const TORONTO_MODULES: ContentModule[] =
   {
     "id": "module-19",
     "type": "list",
-    "title": "Stunning Desserts",
+    "title": "5 Stunning Desserts",
     "description": "Beautiful Toronto dessert spots for artistic treats",
     "author": "",
-    "emoji": "\ud83c\udf705",
+    "emoji": "\ud83c\udf70",
     "businesses": [
       {
         "name": "Delys\u00e9es Luxury Desserts",
