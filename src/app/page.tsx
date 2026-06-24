@@ -126,14 +126,14 @@ export default function HomePage() {
             <Feed />
           </div>
 
-          {/* Map view button — fixed at bottom in full mode */}
+          {/* Map view button — floating in full mode */}
           {isFull && (
-            <div className="flex-shrink-0 p-3 bg-white border-t border-gray-100">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
               <button
                 onClick={() => setFeedState('half')}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 text-white rounded-full font-medium text-sm shadow-lg hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.1)] text-sm font-medium text-gray-800 hover:bg-white/90 transition-all"
               >
-                <MapIcon size={16} />
+                <MapIcon size={15} />
                 <span>Map view</span>
               </button>
             </div>

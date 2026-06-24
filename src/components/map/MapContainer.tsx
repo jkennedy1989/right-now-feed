@@ -21,6 +21,8 @@ function MapInner() {
   const map = useMap();
   const hasInitialized = useRef(false);
   const isProgrammatic = useRef(false);
+  const hasUserMoved = useRef(false);
+  const idleCount = useRef(0);
   const [showRedoButton, setShowRedoButton] = useState(false);
   const [hasFilterActive, setHasFilterActive] = useState(false);
 
@@ -94,13 +96,17 @@ function MapInner() {
     map.panTo(selectedBusiness.location);
   }, [map, selectedBusiness]);
 
-  // Show redo button when user pans/zooms (not programmatic)
+  // Show redo button only when user manually moves the map
   const handleIdle = useCallback(() => {
+    idleCount.current++;
     if (isProgrammatic.current) {
       isProgrammatic.current = false;
       return;
     }
+    // Skip the first idle (initial map load)
+    if (idleCount.current <= 1) return;
     if (!activeModule) {
+      hasUserMoved.current = true;
       setShowRedoButton(true);
     }
   }, [activeModule]);
