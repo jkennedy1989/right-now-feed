@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { getAllBusinesses, TORONTO_CENTER, ContentBusiness, CategoryFilter, getBusinessCategory } from '@/data/toronto-content';
 import { useAppContext } from '@/providers/AppContextProvider';
+import { RefreshCw } from 'lucide-react';
 
-const DEFAULT_ZOOM = 13;
+const DEFAULT_ZOOM = 14;
+const INITIAL_PIN_COUNT = 40;
 
 const CATEGORY_PILLS: { id: CategoryFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -19,6 +21,8 @@ function MapInner() {
   const map = useMap();
   const hasInitialized = useRef(false);
   const isProgrammatic = useRef(false);
+  const [showRedoButton, setShowRedoButton] = useState(false);
+  const [hasFilterActive, setHasFilterActive] = useState(false);
 
   const {
     selectedBusiness,
@@ -34,27 +38,33 @@ function MapInner() {
     );
   }, []);
 
+  // Initial curated set: pick 40 with a good mix of categories
+  const initialBusinesses = useMemo(() => {
+    const restaurants = allBusinesses.filter((b) => getBusinessCategory(b.name) === 'restaurants');
+    const thingsToDo = allBusinesses.filter((b) => getBusinessCategory(b.name) === 'things-to-do');
+    const mixed: ContentBusiness[] = [];
+    const rSlice = restaurants.sort((a, b) => b.rating - a.rating).slice(0, 30);
+    const tSlice = thingsToDo.sort((a, b) => b.rating - a.rating).slice(0, 10);
+    mixed.push(...rSlice, ...tSlice);
+    return mixed.slice(0, INITIAL_PIN_COUNT);
+  }, [allBusinesses]);
+
   const visibleBusinesses = useMemo(() => {
     if (activeModule) return activeModule.businesses.filter((b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832);
-    if (activeCategory === 'all') return allBusinesses;
-    return allBusinesses.filter((b) => getBusinessCategory(b.name) === activeCategory);
-  }, [activeModule, activeCategory, allBusinesses]);
+    if (hasFilterActive || activeCategory !== 'all') {
+      if (activeCategory === 'all') return allBusinesses;
+      return allBusinesses.filter((b) => getBusinessCategory(b.name) === activeCategory);
+    }
+    return initialBusinesses;
+  }, [activeModule, activeCategory, allBusinesses, initialBusinesses, hasFilterActive]);
 
-  // Initial load — fit bounds
+  // Initial load — zoom to a comfortable level
   useEffect(() => {
     if (!map || hasInitialized.current) return;
     hasInitialized.current = true;
-
-    if (visibleBusinesses.length >= 5) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bounds = new (window as any).google.maps.LatLngBounds();
-      visibleBusinesses.slice(0, 20).forEach((b) => bounds.extend(b.location));
-      map.fitBounds(bounds, { top: 60, bottom: 20, left: 20, right: 20 });
-    } else {
-      map.panTo(TORONTO_CENTER);
-      map.setZoom(DEFAULT_ZOOM);
-    }
-  }, [map, visibleBusinesses]);
+    map.panTo(TORONTO_CENTER);
+    map.setZoom(DEFAULT_ZOOM);
+  }, [map]);
 
   // When active module changes, fit bounds to its businesses
   useEffect(() => {
@@ -84,6 +94,30 @@ function MapInner() {
     map.panTo(selectedBusiness.location);
   }, [map, selectedBusiness]);
 
+  // Show redo button when user pans/zooms (not programmatic)
+  const handleIdle = useCallback(() => {
+    if (isProgrammatic.current) {
+      isProgrammatic.current = false;
+      return;
+    }
+    if (!activeModule) {
+      setShowRedoButton(true);
+    }
+  }, [activeModule]);
+
+  // When filter pill is clicked, show all relevant pins and hide redo button
+  const handleCategoryClick = useCallback((cat: CategoryFilter) => {
+    setActiveCategory(cat);
+    setHasFilterActive(true);
+    setShowRedoButton(false);
+  }, [setActiveCategory]);
+
+  // "Search in this area" loads all pins for the current category
+  const handleRedoSearch = useCallback(() => {
+    setHasFilterActive(true);
+    setShowRedoButton(false);
+  }, []);
+
   const handleMarkerClick = useCallback((biz: ContentBusiness) => {
     selectBusinessByName(biz.name);
   }, [selectBusinessByName]);
@@ -98,6 +132,7 @@ function MapInner() {
         gestureHandling="greedy"
         disableDefaultUI
         clickableIcons={false}
+        onIdle={handleIdle}
         style={{ width: '100%', height: '100%' }}
       >
         {visibleBusinesses.map((biz) => {
@@ -131,7 +166,7 @@ function MapInner() {
           {CATEGORY_PILLS.map((pill) => (
             <button
               key={pill.id}
-              onClick={() => setActiveCategory(pill.id)}
+              onClick={() => handleCategoryClick(pill.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                 activeCategory === pill.id
                   ? 'bg-gray-900 text-white shadow-md'
@@ -141,6 +176,19 @@ function MapInner() {
               {pill.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Redo search button */}
+      {showRedoButton && !activeModule && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+          <button
+            onClick={handleRedoSearch}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur-xl border border-white/30 rounded-full shadow-[0_2px_16px_rgba(0,0,0,0.06)] text-xs font-medium text-gray-700 whitespace-nowrap hover:bg-white/90 active:bg-white transition-all"
+          >
+            <RefreshCw size={12} className="text-gray-500" />
+            <span>Search in this area</span>
+          </button>
         </div>
       )}
     </div>
