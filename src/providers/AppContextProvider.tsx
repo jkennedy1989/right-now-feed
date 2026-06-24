@@ -7,12 +7,12 @@ interface AppContextValue {
   selectedBusiness: ContentBusiness | null;
   activeModule: ContentModule | null;
   activeBusinessIndex: number;
-  feedExpanded: boolean;
+  feedState: 'collapsed' | 'half' | 'full';
   activeCategory: CategoryFilter;
   setSelectedBusiness: (biz: ContentBusiness | null) => void;
   setActiveModule: (mod: ContentModule | null) => void;
   setActiveBusinessIndex: (index: number) => void;
-  setFeedExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void;
+  setFeedState: (state: 'collapsed' | 'half' | 'full') => void;
   setActiveCategory: (cat: CategoryFilter) => void;
   selectBusinessByName: (name: string) => void;
 }
@@ -23,7 +23,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [selectedBusiness, setSelectedBusiness] = useState<ContentBusiness | null>(null);
   const [activeModule, setActiveModule] = useState<ContentModule | null>(null);
   const [activeBusinessIndex, setActiveBusinessIndex] = useState(0);
-  const [feedExpanded, setFeedExpanded] = useState(true);
+  const [feedState, setFeedState] = useState<'collapsed' | 'half' | 'full'>('collapsed');
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
 
   const selectBusinessByName = useCallback((name: string) => {
@@ -33,7 +33,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setActiveModule(mod);
         setActiveBusinessIndex(idx);
         setSelectedBusiness(mod.businesses[idx]);
-        setFeedExpanded(false);
+        setFeedState('collapsed');
         return;
       }
     }
@@ -44,7 +44,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       setSelectedBusiness(biz);
       setActiveModule(null);
       setActiveBusinessIndex(0);
-      setFeedExpanded(false);
+      setFeedState('collapsed');
     }
   }, []);
 
@@ -52,12 +52,12 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     selectedBusiness,
     activeModule,
     activeBusinessIndex,
-    feedExpanded,
+    feedState,
     activeCategory,
     setSelectedBusiness,
     setActiveModule,
     setActiveBusinessIndex,
-    setFeedExpanded,
+    setFeedState,
     setActiveCategory,
     selectBusinessByName,
   };
