@@ -4,7 +4,7 @@ import { useAppContext } from '@/providers/AppContextProvider';
 import { CategoryFilter } from '@/data/toronto-content';
 
 const PRIMARY_FILTERS: { id: CategoryFilter; label: string }[] = [
-  { id: 'all', label: 'All picks for you' },
+  { id: 'all', label: 'All picks' },
   { id: 'restaurants', label: 'Restaurants' },
   { id: 'things-to-do', label: 'Things To Do' },
   { id: 'events', label: 'Events' },
