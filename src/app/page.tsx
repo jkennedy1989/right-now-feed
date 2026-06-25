@@ -6,10 +6,10 @@ import { BusinessDetailCard } from '@/components/map/BusinessDetailCard';
 import { MapFilterPills } from '@/components/map/MapFilterPills';
 import { FeedContainer } from '@/components/feed/FeedContainer';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { Search, MapPin, Map as MapIcon } from 'lucide-react';
+import { Search, MapPin, Map as MapIcon, ArrowLeft } from 'lucide-react';
 
 export default function HomePage() {
-  const { feedState, setFeedState, selectedBusiness } = useAppContext();
+  const { feedState, setFeedState, selectedBusiness, setSelectedBusiness, setActiveModule, restoreFeedState } = useAppContext();
   const dragStartY = useRef<number | null>(null);
 
   const handleTap = useCallback(() => {
@@ -82,6 +82,16 @@ export default function HomePage() {
 
           {/* Filter pills below header */}
           {!selectedBusiness && <MapFilterPills />}
+
+          {/* Back button in detail view */}
+          {selectedBusiness && (
+            <button
+              onClick={() => { setSelectedBusiness(null); setActiveModule(null); restoreFeedState(); }}
+              className="absolute top-[56px] left-3 z-30 mt-2 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm"
+            >
+              <ArrowLeft size={16} className="text-gray-700" />
+            </button>
+          )}
 
           {/* Business detail card */}
           {selectedBusiness && <BusinessDetailCard />}

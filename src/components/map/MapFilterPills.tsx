@@ -11,23 +11,23 @@ const PRIMARY_FILTERS: { id: CategoryFilter; label: string }[] = [
   { id: 'services', label: 'Services' },
 ];
 
-const SUB_FILTERS: Record<string, { id: string; label: string }[]> = {
+const SUB_FILTERS: Record<string, { id: string; label: string; emoji: string }[]> = {
   restaurants: [
-    { id: 'award-winning', label: 'Award-Winning' },
-    { id: 'budget', label: 'Budget' },
-    { id: 'celeb-picks', label: 'Celeb Picks' },
-    { id: 'speakeasies', label: 'Speakeasies' },
-    { id: 'bakeries', label: 'Bakeries' },
-    { id: 'wine-bars', label: 'Wine Bars' },
-    { id: 'dog-friendly', label: 'Dog-Friendly' },
+    { id: 'award-winning', label: 'Award-Winning', emoji: '🏆' },
+    { id: 'budget', label: 'Budget', emoji: '💰' },
+    { id: 'celeb-picks', label: 'Celeb Picks', emoji: '⭐' },
+    { id: 'speakeasies', label: 'Speakeasies', emoji: '🚪' },
+    { id: 'bakeries', label: 'Bakeries', emoji: '🥐' },
+    { id: 'wine-bars', label: 'Wine Bars', emoji: '🍷' },
+    { id: 'dog-friendly', label: 'Dog-Friendly', emoji: '🐶' },
   ],
   'things-to-do': [
-    { id: 'nature', label: 'Nature' },
-    { id: 'art', label: 'Art' },
-    { id: 'movies', label: 'Movies' },
-    { id: 'architecture', label: 'Architecture' },
-    { id: 'karaoke', label: 'Karaoke' },
-    { id: 'landmarks', label: 'Landmarks' },
+    { id: 'nature', label: 'Nature', emoji: '🌲' },
+    { id: 'art', label: 'Art', emoji: '🎨' },
+    { id: 'movies', label: 'Movies', emoji: '🍿' },
+    { id: 'architecture', label: 'Architecture', emoji: '🏛️' },
+    { id: 'karaoke', label: 'Karaoke', emoji: '🎤' },
+    { id: 'landmarks', label: 'Landmarks', emoji: '🏛️' },
   ],
 };
 
@@ -57,7 +57,7 @@ export function MapFilterPills() {
   const subFilters = SUB_FILTERS[activeCategory] || [];
 
   return (
-    <div className="absolute top-[52px] left-0 right-0 z-30 flex flex-col gap-2 mt-2">
+    <div className="absolute top-[56px] left-0 right-0 z-30 flex flex-col gap-2 pt-2">
       {/* Primary filters */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3">
         {PRIMARY_FILTERS.map((filter) => (
@@ -77,28 +77,18 @@ export function MapFilterPills() {
 
       {/* Sub-filters */}
       {subFilters.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-3">
-          <button
-            onClick={() => setActiveSubFilter(null)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              activeSubFilter === null
-                ? 'bg-gray-900 text-white'
-                : 'bg-white/80 backdrop-blur-sm text-gray-600 border border-gray-200'
-            }`}
-          >
-            All
-          </button>
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide px-3">
           {subFilters.map((sub) => (
             <button
               key={sub.id}
-              onClick={() => setActiveSubFilter(sub.id)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              onClick={() => setActiveSubFilter(activeSubFilter === sub.id ? null : sub.id)}
+              className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
                 activeSubFilter === sub.id
                   ? 'bg-gray-900 text-white'
                   : 'bg-white/80 backdrop-blur-sm text-gray-600 border border-gray-200'
               }`}
             >
-              {sub.label}
+              {sub.emoji} {sub.label}
             </button>
           ))}
         </div>
