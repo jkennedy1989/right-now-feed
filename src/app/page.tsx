@@ -27,31 +27,16 @@ export default function HomePage() {
     else if (feedState === 'half') setFeedState('collapsed');
   }, [feedState, setFeedState]);
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    dragStartY.current = e.touches[0].clientY;
-  }, []);
-
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (dragStartY.current === null) return;
-    const diff = dragStartY.current - e.changedTouches[0].clientY;
-    dragStartY.current = null;
-    if (Math.abs(diff) < 20) {
-      handleTap();
-      return;
-    }
-    if (diff > 0) handleDragUp();
-    else handleDragDown();
-  }, [handleTap, handleDragUp, handleDragDown]);
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
     dragStartY.current = e.clientY;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
-  const onMouseUp = useCallback((e: React.MouseEvent) => {
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
     if (dragStartY.current === null) return;
     const diff = dragStartY.current - e.clientY;
     dragStartY.current = null;
-    if (Math.abs(diff) < 20) {
+    if (Math.abs(diff) < 10) {
       handleTap();
       return;
     }
@@ -131,11 +116,9 @@ export default function HomePage() {
           {/* Drag handle */}
           {!isFull && (
             <div
-              onTouchStart={onTouchStart}
-              onTouchEnd={onTouchEnd}
-              onMouseDown={onMouseDown}
-              onMouseUp={onMouseUp}
-              className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none py-3 flex justify-center"
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none py-3 flex justify-center touch-none"
             >
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
