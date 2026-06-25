@@ -33,9 +33,9 @@ export function ListCarousel({ list, ranked = false }: ListCarouselProps) {
           <div>
             <h2 className="text-base font-bold text-gray-900">{list.title}</h2>
           </div>
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+          <button onClick={() => list.businesses[0] && selectBusinessByName(list.businesses[0].name)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <ChevronRight size={18} className="text-gray-600" />
-          </div>
+          </button>
         </div>
       </div>
       <div className="overflow-x-auto scrollbar-hide">

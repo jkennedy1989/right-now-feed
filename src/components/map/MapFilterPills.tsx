@@ -2,9 +2,11 @@
 
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CategoryFilter } from '@/data/toronto-content';
+import { weeklyPicks } from '@/data/weekly-picks';
 
 const PRIMARY_FILTERS: { id: CategoryFilter; label: string }[] = [
-  { id: 'all', label: 'All picks' },
+  { id: 'all', label: 'All' },
+  { id: 'top-10', label: 'Your Top 10' },
   { id: 'restaurants', label: 'Restaurants' },
   { id: 'things-to-do', label: 'Things To Do' },
   { id: 'events', label: 'Events' },
@@ -54,9 +56,17 @@ export const SUB_FILTER_LIST_MAP: Record<string, Record<string, string[]>> = {
 };
 
 export function MapFilterPills() {
-  const { activeCategory, setActiveCategory, activeSubFilter, setActiveSubFilter } = useAppContext();
+  const { activeCategory, setActiveCategory, activeSubFilter, setActiveSubFilter, selectBusinessByName } = useAppContext();
 
   const subFilters = SUB_FILTERS[activeCategory] || [];
+
+  const handlePrimaryClick = (id: CategoryFilter) => {
+    if (id === 'top-10') {
+      if (weeklyPicks[0]) selectBusinessByName(weeklyPicks[0].name);
+      return;
+    }
+    setActiveCategory(id);
+  };
 
   return (
     <div className="absolute top-[64px] left-0 right-0 z-30 flex flex-col gap-2 pt-2">
@@ -65,7 +75,7 @@ export function MapFilterPills() {
         {PRIMARY_FILTERS.map((filter) => (
           <button
             key={filter.id}
-            onClick={() => setActiveCategory(filter.id)}
+            onClick={() => handlePrimaryClick(filter.id)}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
               activeCategory === filter.id
                 ? 'bg-[#E00707] text-white shadow-md'

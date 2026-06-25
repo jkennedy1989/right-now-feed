@@ -1788,7 +1788,7 @@ export const TORONTO_MODULES: ContentModule[] =
 export const TORONTO_CENTER = { lat: 43.6532, lng: -79.3832 };
 export const MOCK_USER_LOCATION = { lat: 43.6555, lng: -79.3950 };
 
-export type CategoryFilter = 'all' | 'restaurants' | 'things-to-do' | 'events' | 'services';
+export type CategoryFilter = 'all' | 'top-10' | 'restaurants' | 'things-to-do' | 'events' | 'services';
 
 const THINGS_TO_DO_MODULES = new Set(['module-9', 'module-10', 'module-11', 'module-21', 'module-23']);
 

@@ -17,6 +17,7 @@ import { SaveButton } from "../shared/SaveButton";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAppContext } from "@/providers/AppContextProvider";
 import { SUB_FILTER_LIST_MAP } from "@/components/map/MapFilterPills";
+import { weeklyPicks } from "@/data/weekly-picks";
 
 const PINNED_IDS = ["check-off-wishlist-new", "latest-from-friends"];
 
@@ -30,7 +31,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function FeedContainer() {
-  const { activeCategory, activeSubFilter } = useAppContext();
+  const { activeCategory, activeSubFilter, selectBusinessByName } = useAppContext();
   const [showOverlay, setShowOverlay] = useState(false);
   const [feedLists, setFeedLists] = useState<CuratedList[]>([]);
 
@@ -63,8 +64,6 @@ export function FeedContainer() {
 
   return (
     <div>
-      {showOverlay && <DailyPicksOverlay onClose={() => setShowOverlay(false)} />}
-
       <div className="pb-20">
         {/* 1. Neighborhood Module */}
         <NeighborhoodModule />
@@ -76,7 +75,9 @@ export function FeedContainer() {
 
         {/* 3. Top 10 Weekly Picks */}
         {activeCategory !== "events" && activeCategory !== "services" && (
-          <DailyPicksModule onOpen={() => setShowOverlay(true)} />
+          <DailyPicksModule onOpen={() => {
+            if (weeklyPicks[0]) selectBusinessByName(weeklyPicks[0].name);
+          }} />
         )}
 
         {/* 4. Friends carousel */}

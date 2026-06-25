@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES, getAllBusinesses } from '@/data/toronto-content';
 import { lists } from '@/data/lists';
+import { weeklyPicks } from '@/data/weekly-picks';
 
 const locationLookup = new Map<string, { lat: number; lng: number }>();
 for (const biz of getAllBusinesses()) {
@@ -82,6 +83,31 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setFeedState('collapsed');
         return;
       }
+    }
+    // Try weekly picks
+    const wpIdx = weeklyPicks.findIndex((b) => b.name === name);
+    if (wpIdx >= 0) {
+      const converted: ContentModule = {
+        id: 'weekly-top-10',
+        type: 'ranked-list',
+        title: 'Your Top 10 Weekly Picks',
+        description: '',
+        author: 'Yelp',
+        emoji: '🥇',
+        businesses: weeklyPicks.map((b) => ({
+          name: b.name,
+          rating: b.rating || 0,
+          description: b.description || '',
+          imageUrl: b.imageUrl,
+          googleMapsUrl: '',
+          location: locationLookup.get(b.name) || { lat: 43.6532, lng: -79.3832 },
+        })),
+      };
+      setActiveModule(converted);
+      setActiveBusinessIndex(wpIdx);
+      setSelectedBusiness(converted.businesses[wpIdx]);
+      setFeedState('collapsed');
+      return;
     }
   }, [feedState]);
 

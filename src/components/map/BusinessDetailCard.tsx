@@ -3,10 +3,24 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { ContentBusiness } from '@/data/toronto-content';
-import { X, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
 import { RatingPill } from '@/components/ui/RatingPill';
 
-function BusinessCard({ business }: { business: ContentBusiness }) {
+const MOCK_TIMES = [
+  ['6:30 PM', '7:00 PM', '8:15 PM'],
+  ['7:00 PM', '7:30 PM', '9:00 PM'],
+  ['6:00 PM', '7:15 PM', '8:00 PM'],
+  ['7:30 PM', '8:00 PM', '8:45 PM'],
+  ['6:00 PM', '6:45 PM', '8:30 PM'],
+];
+
+function BusinessCard({ business, rank, isWishlist, index, friendActivity }: {
+  business: ContentBusiness;
+  rank?: number;
+  isWishlist?: boolean;
+  index: number;
+  friendActivity?: string;
+}) {
   return (
     <div className="w-full flex-shrink-0 snap-center">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden mx-4">
@@ -20,7 +34,15 @@ function BusinessCard({ business }: { business: ContentBusiness }) {
           </div>
         )}
         <div className="p-3">
-          <h3 className="text-sm font-bold text-gray-900">{business.name}</h3>
+          {friendActivity && (
+            <p className="text-[10px] font-medium text-blue-600 mb-0.5">{friendActivity}</p>
+          )}
+          <div className="flex items-center gap-1.5">
+            {rank !== undefined && (
+              <span className="text-sm font-bold text-[#E00707]">#{rank}</span>
+            )}
+            <h3 className="text-sm font-bold text-gray-900">{business.name}</h3>
+          </div>
           {business.rating > 0 && (
             <div className="mt-1">
               <RatingPill rating={business.rating} size="md" />
@@ -28,6 +50,16 @@ function BusinessCard({ business }: { business: ContentBusiness }) {
           )}
           {business.description && (
             <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{business.description}</p>
+          )}
+          {isWishlist && (
+            <div className="flex items-center gap-1.5 mt-2 overflow-x-auto scrollbar-hide">
+              <Clock size={11} className="text-gray-400 flex-shrink-0" />
+              {MOCK_TIMES[index % MOCK_TIMES.length].map((time) => (
+                <span key={time} className="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-md">
+                  {time}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -144,9 +176,20 @@ export function BusinessDetailCard() {
         onScroll={handleScroll}
         className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
       >
-        {businesses.map((biz) => (
-          <BusinessCard key={biz.name} business={biz} />
-        ))}
+        {businesses.map((biz, i) => {
+          const isRanked = activeModule?.title?.toLowerCase().includes('top') || activeModule?.type === 'ranked-list';
+          const isWishlist = activeModule?.id === 'check-off-wishlist-new';
+          return (
+            <BusinessCard
+              key={biz.name}
+              business={biz}
+              index={i}
+              rank={isRanked ? i + 1 : undefined}
+              isWishlist={isWishlist}
+              friendActivity={biz.friendActivity}
+            />
+          );
+        })}
       </div>
     </div>
   );
