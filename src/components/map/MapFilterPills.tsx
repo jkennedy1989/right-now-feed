@@ -57,7 +57,7 @@ export function MapFilterPills() {
   const subFilters = SUB_FILTERS[activeCategory] || [];
 
   return (
-    <div className="absolute top-[56px] left-0 right-0 z-30 flex flex-col gap-2 pt-2">
+    <div className="absolute top-[64px] left-0 right-0 z-30 flex flex-col gap-2 pt-2">
       {/* Primary filters */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3">
         {PRIMARY_FILTERS.map((filter) => (
