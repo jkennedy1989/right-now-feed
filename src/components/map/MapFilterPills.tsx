@@ -13,6 +13,7 @@ const PRIMARY_FILTERS: { id: CategoryFilter; label: string }[] = [
 
 const SUB_FILTERS: Record<string, { id: string; label: string; emoji: string }[]> = {
   restaurants: [
+    { id: 'saved', label: 'Saved', emoji: '🔖' },
     { id: 'award-winning', label: 'Award-Winning', emoji: '🏆' },
     { id: 'budget', label: 'Budget', emoji: '💰' },
     { id: 'celeb-picks', label: 'Celeb Picks', emoji: '⭐' },
@@ -33,6 +34,7 @@ const SUB_FILTERS: Record<string, { id: string; label: string; emoji: string }[]
 
 export const SUB_FILTER_LIST_MAP: Record<string, Record<string, string[]>> = {
   restaurants: {
+    'saved': ['check-off-wishlist-new'],
     'award-winning': ['michelin-on-a-dime-new', 'michelin-starred-new', 'yelps-top-10'],
     'budget': ['eats-under-20-new'],
     'celeb-picks': ['bourdains-faves-new', 'drakes-haunts'],
