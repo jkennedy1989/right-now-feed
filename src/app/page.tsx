@@ -87,9 +87,10 @@ export default function HomePage() {
           {selectedBusiness && (
             <button
               onClick={() => { setSelectedBusiness(null); setActiveModule(null); restoreFeedState(); }}
-              className="absolute top-[56px] left-3 z-30 mt-2 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm"
+              className="absolute top-[56px] left-3 z-30 mt-2 flex items-center gap-1 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm"
             >
-              <ArrowLeft size={16} className="text-gray-700" />
+              <ArrowLeft size={14} className="text-gray-700" />
+              <span className="text-xs font-semibold text-gray-700">Back</span>
             </button>
           )}
 
