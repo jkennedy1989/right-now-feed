@@ -58,6 +58,13 @@ function MapInner() {
   const visibleBusinesses = useMemo(() => {
     if (activeModule) return activeModule.businesses.filter((b) => b.location.lat !== 43.6532 || b.location.lng !== -79.3832);
 
+    // Single selected business (no module) — show just that pin
+    if (selectedBusiness && !activeModule) {
+      if (selectedBusiness.location.lat !== 43.6532 || selectedBusiness.location.lng !== -79.3832) {
+        return [selectedBusiness];
+      }
+    }
+
     // Sub-filter: show only businesses from the sub-filter's lists
     if (activeSubFilter && SUB_FILTER_LIST_MAP[activeCategory]?.[activeSubFilter]) {
       const listIds = SUB_FILTER_LIST_MAP[activeCategory][activeSubFilter];

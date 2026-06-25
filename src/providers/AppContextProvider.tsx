@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { ContentBusiness, ContentModule, CategoryFilter, TORONTO_MODULES, getAllBusinesses } from '@/data/toronto-content';
-import { lists } from '@/data/lists';
+import { lists, singleItems } from '@/data/lists';
 import { weeklyPicks } from '@/data/weekly-picks';
 
 const locationLookup = new Map<string, { lat: number; lng: number }>();
@@ -107,6 +107,23 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       setActiveModule(converted);
       setActiveBusinessIndex(wpIdx);
       setSelectedBusiness(converted.businesses[wpIdx]);
+      setFeedState('collapsed');
+      return;
+    }
+    // Try single items (standalone businesses)
+    const singleItem = singleItems.find((s) => s.name === name);
+    if (singleItem) {
+      const biz: ContentBusiness = {
+        name: singleItem.name,
+        rating: singleItem.rating || 0,
+        description: singleItem.description || '',
+        imageUrl: singleItem.mediaUrls[0] || '',
+        googleMapsUrl: singleItem.location || '',
+        location: locationLookup.get(singleItem.name) || { lat: 43.6532, lng: -79.3832 },
+      };
+      setActiveModule(null);
+      setActiveBusinessIndex(0);
+      setSelectedBusiness(biz);
       setFeedState('collapsed');
       return;
     }
