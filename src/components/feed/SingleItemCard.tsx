@@ -61,7 +61,7 @@ function getAvatarForItem(id: string): string {
 
 export function SingleItemCard({ item }: SingleItemCardProps) {
   const { isSaved, toggle } = useSavedItems();
-  const { selectBusinessByName } = useAppContext();
+  const { selectSingleItem } = useAppContext();
   const [currentMedia, setCurrentMedia] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const avatar = getAvatarForItem(item.id);
@@ -106,7 +106,7 @@ export function SingleItemCard({ item }: SingleItemCardProps) {
   };
 
   return (
-    <div className="px-4 py-5 cursor-pointer" onClick={() => selectBusinessByName(item.name)}>
+    <div className="px-4 py-5 cursor-pointer" onClick={() => selectSingleItem(item)}>
       <div className="flex items-center gap-2 mb-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={avatar} alt="" className="w-[24px] h-[24px] rounded-full object-cover flex-shrink-0" />

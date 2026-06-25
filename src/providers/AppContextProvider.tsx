@@ -44,6 +44,7 @@ interface AppContextValue {
   setActiveCategory: (cat: CategoryFilter) => void;
   setActiveSubFilter: (filter: string | null) => void;
   selectBusinessByName: (name: string) => void;
+  selectSingleItem: (item: { name: string; rating?: number; description?: string; mediaUrls: string[]; authorActivity?: string }) => void;
   openWeeklyPicks: () => void;
   restoreFeedState: () => void;
 }
@@ -147,6 +148,24 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }
   }, [feedState]);
 
+  const selectSingleItem = useCallback((item: { name: string; rating?: number; description?: string; mediaUrls: string[]; authorActivity?: string }) => {
+    previousFeedState.current = feedState;
+    const loc = locationLookup.get(item.name) || { lat: 43.655, lng: -79.395 };
+    const biz: ContentBusiness = {
+      name: item.name,
+      rating: item.rating || 0,
+      description: item.description || '',
+      imageUrl: item.mediaUrls[0] || '',
+      googleMapsUrl: '',
+      location: loc,
+      friendActivity: item.authorActivity,
+    };
+    setActiveModule(null);
+    setActiveBusinessIndex(0);
+    setSelectedBusiness(biz);
+    setFeedState('collapsed');
+  }, [feedState]);
+
   const openWeeklyPicks = useCallback(() => {
     previousFeedState.current = feedState;
     const converted: ContentModule = {
@@ -189,6 +208,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setActiveCategory,
     setActiveSubFilter,
     selectBusinessByName,
+    selectSingleItem,
     openWeeklyPicks,
     restoreFeedState,
   };
