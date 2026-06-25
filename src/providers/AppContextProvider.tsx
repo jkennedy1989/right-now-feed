@@ -11,6 +11,24 @@ for (const biz of getAllBusinesses()) {
     locationLookup.set(biz.name, biz.location);
   }
 }
+// Single item locations (resolved via Google Places)
+const singleItemLocations: Record<string, { lat: number; lng: number }> = {
+  "Prime Seafood Palace": { lat: 43.6449, lng: -79.4167 },
+  "Tilt Arcade Bar": { lat: 43.6416, lng: -79.4308 },
+  "Lee": { lat: 43.6472, lng: -79.3993 },
+  "Art Gallery of Ontario": { lat: 43.6536, lng: -79.3925 },
+  "Chica’s Chicken": { lat: 43.6653, lng: -79.4643 },
+  "Tiflisi": { lat: 43.6698, lng: -79.3016 },
+  "Quetzal": { lat: 43.6563, lng: -79.4068 },
+  "Prehistoria Museum & SkullStore": { lat: 43.6571, lng: -79.3811 },
+  "Pizzeria Badialdi": { lat: 43.6461, lng: -79.4233 },
+  "Piggy's Island": { lat: 43.8055, lng: -79.4203 },
+  "Aloette": { lat: 43.6485, lng: -79.3960 },
+  "Takja BBQ House": { lat: 43.6535, lng: -79.4273 },
+};
+for (const [name, loc] of Object.entries(singleItemLocations)) {
+  locationLookup.set(name, loc);
+}
 
 interface AppContextValue {
   selectedBusiness: ContentBusiness | null;
