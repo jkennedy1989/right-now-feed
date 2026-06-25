@@ -31,7 +31,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function FeedContainer() {
-  const { activeCategory, activeSubFilter, selectBusinessByName } = useAppContext();
+  const { activeCategory, activeSubFilter, selectBusinessByName, openWeeklyPicks } = useAppContext();
   const [showOverlay, setShowOverlay] = useState(false);
   const [feedLists, setFeedLists] = useState<CuratedList[]>([]);
 
@@ -75,9 +75,7 @@ export function FeedContainer() {
 
         {/* 3. Top 10 Weekly Picks */}
         {activeCategory !== "events" && activeCategory !== "services" && (
-          <DailyPicksModule onOpen={() => {
-            if (weeklyPicks[0]) selectBusinessByName(weeklyPicks[0].name);
-          }} />
+          <DailyPicksModule onOpen={() => openWeeklyPicks()} />
         )}
 
         {/* 4. Friends carousel */}

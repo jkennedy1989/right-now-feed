@@ -2,7 +2,6 @@
 
 import { useAppContext } from '@/providers/AppContextProvider';
 import { CategoryFilter } from '@/data/toronto-content';
-import { weeklyPicks } from '@/data/weekly-picks';
 
 const PRIMARY_FILTERS: { id: CategoryFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -56,13 +55,13 @@ export const SUB_FILTER_LIST_MAP: Record<string, Record<string, string[]>> = {
 };
 
 export function MapFilterPills() {
-  const { activeCategory, setActiveCategory, activeSubFilter, setActiveSubFilter, selectBusinessByName } = useAppContext();
+  const { activeCategory, setActiveCategory, activeSubFilter, setActiveSubFilter, openWeeklyPicks } = useAppContext();
 
   const subFilters = SUB_FILTERS[activeCategory] || [];
 
   const handlePrimaryClick = (id: CategoryFilter) => {
     if (id === 'top-10') {
-      if (weeklyPicks[0]) selectBusinessByName(weeklyPicks[0].name);
+      openWeeklyPicks();
       return;
     }
     setActiveCategory(id);

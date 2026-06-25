@@ -26,6 +26,7 @@ interface AppContextValue {
   setActiveCategory: (cat: CategoryFilter) => void;
   setActiveSubFilter: (filter: string | null) => void;
   selectBusinessByName: (name: string) => void;
+  openWeeklyPicks: () => void;
   restoreFeedState: () => void;
 }
 
@@ -111,6 +112,30 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }
   }, [feedState]);
 
+  const openWeeklyPicks = useCallback(() => {
+    previousFeedState.current = feedState;
+    const converted: ContentModule = {
+      id: 'weekly-top-10',
+      type: 'ranked-list',
+      title: 'Your Top 10 Weekly Picks',
+      description: '',
+      author: 'Yelp',
+      emoji: '🥇',
+      businesses: weeklyPicks.map((b) => ({
+        name: b.name,
+        rating: b.rating || 0,
+        description: b.description || '',
+        imageUrl: b.imageUrl,
+        googleMapsUrl: '',
+        location: locationLookup.get(b.name) || { lat: 43.6532, lng: -79.3832 },
+      })),
+    };
+    setActiveModule(converted);
+    setActiveBusinessIndex(0);
+    setSelectedBusiness(converted.businesses[0]);
+    setFeedState('collapsed');
+  }, [feedState]);
+
   const restoreFeedState = useCallback(() => {
     setFeedState(previousFeedState.current);
   }, []);
@@ -129,6 +154,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setActiveCategory,
     setActiveSubFilter,
     selectBusinessByName,
+    openWeeklyPicks,
     restoreFeedState,
   };
 
