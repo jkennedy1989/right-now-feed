@@ -55,7 +55,7 @@ function BusinessCard({ business, rank, isWishlist, index, friendActivity }: {
             <div className="flex items-center gap-1.5 mt-2 overflow-x-auto scrollbar-hide">
               <Clock size={11} className="text-gray-400 flex-shrink-0" />
               {MOCK_TIMES[index % MOCK_TIMES.length].map((time) => (
-                <span key={time} className="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-md">
+                <span key={time} className="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-md hover:bg-gray-200 transition-colors cursor-pointer">
                   {time}
                 </span>
               ))}

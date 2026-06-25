@@ -70,21 +70,16 @@ export function SavedListCarousel({ list }: { list: CuratedList }) {
               </div>
               <div className="mt-2 px-0.5">
                 <h4 className="font-semibold text-gray-900 text-sm truncate">{biz.name}</h4>
-                {booked[biz.id] ? (
-                  <div className="mt-2 py-1.5 px-3 bg-green-50 rounded-lg text-center">
-                    <span className="text-green-700 text-xs font-semibold">✓ Booked for {booked[biz.id]}</span>
-                  </div>
-                ) : (
+                {(
                   <div className="flex items-center gap-1.5 mt-2 overflow-x-auto scrollbar-hide">
                     <Clock size={11} className="text-gray-400 flex-shrink-0" />
                     {mockTimes[i % mockTimes.length].map((time) => (
-                      <button
+                      <span
                         key={time}
-                        onClick={() => handleBook(biz.id, time)}
-                        className="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                        className="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
                       >
                         {time}
-                      </button>
+                      </span>
                     ))}
                   </div>
                 )}
